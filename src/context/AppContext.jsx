@@ -5,23 +5,14 @@ export const AppContext = createContext();
 
 export function AppProvider({ children }) {
   const [step, setStep] = useState(0); // 0 = landing
-  const [genreId, setGenreId] = useState(() => JSON.parse(localStorage.getItem('genreId')) || null);
-  const [characters, setCharacters] = useState(() => JSON.parse(localStorage.getItem('characters')) || {
+  const [genreId, setGenreId] = useState(null);
+  const [characters, setCharacters] = useState({
     maleName: '', femaleName: '', maleRole: '', femaleRole: ''
   });
-  const [plot, setPlot] = useState(() => JSON.parse(localStorage.getItem('plot')) || { trope: '', conflict: '', setting: '' });
-  const [outline, setOutline] = useState(() => JSON.parse(localStorage.getItem('outline')) || null);
-  const [coverUrl, setCoverUrl] = useState(() => JSON.parse(localStorage.getItem('coverUrl')) || null);
-  const [chapter, setChapter] = useState(() => JSON.parse(localStorage.getItem('chapter')) || '');
-
-  useEffect(() => {
-    localStorage.setItem('genreId', JSON.stringify(genreId));
-    localStorage.setItem('characters', JSON.stringify(characters));
-    localStorage.setItem('plot', JSON.stringify(plot));
-    localStorage.setItem('outline', JSON.stringify(outline));
-    localStorage.setItem('coverUrl', JSON.stringify(coverUrl));
-    localStorage.setItem('chapter', JSON.stringify(chapter));
-  }, [genreId, characters, plot, outline, coverUrl, chapter]);
+  const [plot, setPlot] = useState({ trope: '', conflict: '', setting: '' });
+  const [outline, setOutline] = useState(null);
+  const [coverUrl, setCoverUrl] = useState(null);
+  const [chapter, setChapter] = useState('');
 
   // Derived state
   const genre = GENRES.find((g) => g.id === genreId);
