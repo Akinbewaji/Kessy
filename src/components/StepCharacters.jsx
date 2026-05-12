@@ -13,12 +13,12 @@ export default function StepCharacters() {
       return;
     }
     setError('');
-    navigate('/plot');
+    navigate('/writer/plot');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBack = () => {
-    navigate('/genre');
+    navigate('/writer/genre');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

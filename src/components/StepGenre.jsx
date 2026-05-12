@@ -10,7 +10,7 @@ export default function StepGenre() {
 
   const handleSelect = (id) => {
     setGenreId(id);
-    navigate('/characters');
+    navigate('/writer/characters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

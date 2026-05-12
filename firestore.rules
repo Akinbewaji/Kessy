@@ -1,0 +1,27 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /books/{bookId} {
+      // Allow a user to read their own books
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Allow a user to create a book only if they assign it to their own ID
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Allow a user to update their own books, ensuring they can't reassign the owner
+      allow update: if request.auth != null 
+                    && resource.data.userId == request.auth.uid 
+                    && request.resource.data.userId == request.auth.uid;
+                    
+      // Allow a user to delete their own books
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+  }
+}

@@ -1,7 +1,22 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import Particles from './components/Particles';
-import Nav from './components/Nav';
+import MainNavbar from './components/MainNavbar';
+import Footer from './components/Footer';
+import ToolStepper from './components/ToolStepper';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Public Pages
+import Home from './components/pages/Home';
+import Services from './components/pages/Services';
+import Course from './components/pages/Course';
+import Contact from './components/pages/Contact';
+import Login from './components/pages/Login';
+import Signup from './components/pages/Signup';
+import Library from './components/pages/Library';
+import BookEditor from './components/pages/BookEditor';
+
+// AI Writer Tool Steps
 import StepLanding from './components/StepLanding';
 import StepGenre from './components/StepGenre';
 import StepCharacters from './components/StepCharacters';
@@ -10,15 +25,26 @@ import StepOutline from './components/StepOutline';
 import StepCover from './components/StepCover';
 import StepWrite from './components/StepWrite';
 
-// Layout component to include Nav
-function AppLayout({ children }) {
+// Base Layout for all pages
+function RootLayout() {
   return (
     <div id="app" className="animate-in">
-      <Nav />
-      <div id="main">
-        {children}
+      <MainNavbar />
+      <div id="main" style={{ minHeight: '80vh' }}>
+        <Outlet />
       </div>
+      <Footer />
     </div>
+  );
+}
+
+// Layout specific to the Writer tool to include the stepper
+function WriterLayout() {
+  return (
+    <>
+      <ToolStepper />
+      <Outlet />
+    </>
   );
 }
 
@@ -27,13 +53,45 @@ function App() {
     <BrowserRouter>
       <Particles />
       <Routes>
-        <Route path="/" element={<StepLanding />} />
-        <Route path="/genre" element={<AppLayout><StepGenre /></AppLayout>} />
-        <Route path="/characters" element={<AppLayout><StepCharacters /></AppLayout>} />
-        <Route path="/plot" element={<AppLayout><StepPlot /></AppLayout>} />
-        <Route path="/outline" element={<AppLayout><StepOutline /></AppLayout>} />
-        <Route path="/cover" element={<AppLayout><StepCover /></AppLayout>} />
-        <Route path="/write" element={<AppLayout><StepWrite /></AppLayout>} />
+        {/* Global Root Layout wraps everything */}
+        <Route element={<RootLayout />}>
+          
+          {/* Public Brand Pages */}
+          <Route path="/" element={<Home />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/course" element={<Course />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          {/* Protected Library Pages */}
+          <Route path="/library" element={
+            <ProtectedRoute>
+              <Library />
+            </ProtectedRoute>
+          } />
+          <Route path="/library/:id" element={
+            <ProtectedRoute>
+              <BookEditor />
+            </ProtectedRoute>
+          } />
+
+          {/* Protected AI Writer Hub */}
+          <Route path="/writer" element={
+            <ProtectedRoute>
+              <WriterLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<StepLanding />} />
+            <Route path="genre" element={<StepGenre />} />
+            <Route path="characters" element={<StepCharacters />} />
+            <Route path="plot" element={<StepPlot />} />
+            <Route path="outline" element={<StepOutline />} />
+            <Route path="cover" element={<StepCover />} />
+            <Route path="write" element={<StepWrite />} />
+          </Route>
+
+        </Route>
       </Routes>
     </BrowserRouter>
   );

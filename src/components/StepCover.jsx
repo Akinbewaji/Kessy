@@ -11,12 +11,12 @@ export default function StepCover() {
   const [error, setError] = useState('');
 
   const handleBack = () => {
-    navigate('/outline');
+    navigate('/writer/outline');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNext = () => {
-    navigate('/write');
+    navigate('/writer/write');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

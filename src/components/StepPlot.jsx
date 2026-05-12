@@ -41,7 +41,7 @@ No markdown, no explanation. Pure JSON only.`;
       const result = await callClaude(prompt, system);
       const clean = result.replace(/```json|```/g, '').trim();
       setOutline(JSON.parse(clean));
-      navigate('/outline');
+      navigate('/writer/outline');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch(e) {
       setError('Could not generate outline. Please try again.');
@@ -51,7 +51,7 @@ No markdown, no explanation. Pure JSON only.`;
   };
 
   const handleBack = () => {
-    navigate('/characters');
+    navigate('/writer/characters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

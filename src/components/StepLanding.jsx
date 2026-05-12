@@ -7,7 +7,7 @@ export default function StepLanding() {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate('/genre');
+    navigate('/writer/genre');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

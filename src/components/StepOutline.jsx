@@ -7,12 +7,12 @@ export default function StepOutline() {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate('/plot');
+    navigate('/writer/plot');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCover = () => {
-    navigate('/cover');
+    navigate('/writer/cover');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

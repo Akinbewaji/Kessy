@@ -2,12 +2,18 @@ import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { callClaude } from '../api/groq';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 export default function StepWrite() {
   const { genre, characters, plot, outline, coverUrl, chapter, setChapter, resetApp } = useContext(AppContext);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [savingToLib, setSavingToLib] = useState(false);
   const [error, setError] = useState('');
+  const [isWide, setIsWide] = useState(false);
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -67,8 +73,114 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSaveToLibrary = async () => {
+    if (!currentUser) {
+      setError("You must be logged in to save to library.");
+      return;
+    }
+    setSavingToLib(true);
+    try {
+      console.log("Saving book to library...", { title: outline[0]?.title, userId: currentUser.uid });
+      const docRef = await addDoc(collection(db, "books"), {
+        userId: currentUser.uid,
+        title: outline[0]?.title || 'Untitled',
+        content: chapter,
+        coverUrl: coverUrl,
+        genreName: genre.name,
+        genreColor: genre.color,
+        hero: characters.maleName,
+        heroine: characters.femaleName,
+        setting: plot.setting,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      });
+      console.log("Book saved successfully!", docRef.id);
+      
+      setIsSuccess(true);
+      // Fast transition
+      setTimeout(() => {
+        resetApp();
+        navigate('/library');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 800); // Shorter duration for better UX
+    } catch (err) {
+      console.error("Firestore Save Error:", err);
+      setError(`Failed to save: ${err.message || "Unknown error"}`);
+    } finally {
+      setSavingToLib(false);
+    }
+  };
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  const renderChapterContent = (text) => {
+    if (!text) return null;
+    
+    // Split into segments by chapter headers
+    // Using a regex to split and keep the delimiter if it matches Chapter X: Title
+    const segments = text.split(/(?=Chapter \d+:)/g);
+    
+    return segments.map((segment, segIdx) => {
+      // Find the header (first line) and content (rest)
+      const lines = segment.trim().split('\n');
+      const header = lines[0];
+      const rest = lines.slice(1).join('\n').trim();
+      
+      const isHeader = header.startsWith('Chapter ');
+      
+      return (
+        <React.Fragment key={segIdx}>
+          {isHeader && (
+            <h3 className="chapter-header dk-title">
+              {header}
+            </h3>
+          )}
+          
+          {rest.split(/\n\n+/).map((para, paraIdx) => (
+            <p key={paraIdx} className="chapter-paragraph">
+              {para.split('\n').map((line, lineIdx) => (
+                <React.Fragment key={lineIdx}>
+                  {line}
+                  {lineIdx < para.split('\n').length - 1 && <br />}
+                </React.Fragment>
+              ))}
+            </p>
+          ))}
+        </React.Fragment>
+      );
+    });
+  };
+
   return (
     <div id="step-6" className="animate-in">
+      {isSuccess && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(5,0,5,0.9)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(10px)'
+        }} className="animate-in">
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
+          <h2 className="dk-title" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Masterpiece Saved!</h2>
+          <p className="dk-body" style={{ color: '#a1a1aa' }}>Opening your editor...</p>
+        </div>
+      )}
+      
       <p className="step-eyebrow dk-body" style={{ color: 'var(--accent)' }}>STEP 06</p>
       <h2 className="step-title dk-title">Your Manuscript</h2>
       
@@ -86,19 +198,36 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
       {error && <div className="error-msg animate-in">{error}</div>}
       
       {chapter && (
-        <div id="chapter-output" className="animate-in">
-          <div className="chapter-box" style={{ border: `1px solid ${genre.color}33` }}>
+        <div id="chapter-output" className={`animate-in ${isWide ? 'full-width' : ''}`}>
+          <div className="btn-row" style={{ marginBottom: '1rem', justifyContent: 'center', gap: '1rem' }}>
+             <button className="btn-ghost dk-body" onClick={() => setIsWide(!isWide)}>
+               {isWide ? '⊙ Normal View' : '⊚ Wide View'}
+             </button>
+             <button className="btn-ghost dk-body" onClick={toggleFullScreen}>
+               ⛶ Full Screen
+             </button>
+          </div>
+          <div className="chapter-box" style={{ 
+            border: `1px solid ${genre.color}33`,
+            maxWidth: isWide ? '100%' : '1100px',
+            padding: isWide ? '5rem 10%' : '5rem 6rem'
+          }}>
             {coverUrl && (
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <img src={coverUrl} alt="Cover" style={{ maxWidth: '300px', width: '100%', borderRadius: '4px' }} />
+              <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                <img src={coverUrl} alt="Cover" style={{ maxWidth: '300px', width: '100%', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
               </div>
             )}
-            <p className="chapter-text">{chapter}</p>
+            <div className="manuscript-content">
+              {renderChapterContent(chapter)}
+            </div>
           </div>
           <div className="btn-row">
             <button className="btn-ghost dk-body" onClick={handleBack} disabled={isLoading}>← Back to Cover</button>
             <button className="btn-accent dk-body" onClick={downloadChapter} disabled={isLoading}>
               {isLoading ? 'Writing...' : 'Download Full Story'}
+            </button>
+            <button className="btn-accent dk-body" onClick={handleSaveToLibrary} disabled={isLoading || savingToLib}>
+              {savingToLib ? 'Saving...' : 'Save to Library'}
             </button>
             <button className="btn-accent outline dk-body" onClick={() => { resetApp(); navigate('/'); }} disabled={isLoading}>Start New Story</button>
           </div>
