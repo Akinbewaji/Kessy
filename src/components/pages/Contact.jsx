@@ -12,7 +12,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="animate-in" style={{ padding: '8rem 2rem', maxWidth: '700px', margin: '0 auto' }}>
+    <div className="animate-in standard-section" style={{ maxWidth: '700px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
         <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>GET IN TOUCH</p>
         <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1.5rem' }}>Contact Me</h1>

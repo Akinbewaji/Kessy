@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function Services() {
   return (
-    <div className="animate-in" style={{ padding: '8rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="animate-in standard-section" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
         <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>BESPOKE LITERARY SERVICES</p>
         <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(3rem, 6vw, 4.5rem)', marginBottom: '1.5rem' }}>Hire a Master Ghostwriter</h1>

@@ -30,7 +30,7 @@ export default function Library() {
   }, [currentUser]);
 
   return (
-    <div className="animate-in" style={{ padding: '8rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="animate-in standard-section" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '5rem', gap: '2rem', flexWrap: 'wrap' }}>
         <div>
           <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem' }}>PERSONAL ARCHIVE</p>

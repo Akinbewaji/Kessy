@@ -49,12 +49,53 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
 /* APP & LAYOUT */
 #app { position: relative; z-index: 10; }
 
+.hero-section { padding: 10rem 2rem 6rem; }
+.standard-section { padding: 8rem 2rem; }
+.promo-section { padding: 10rem 2rem; }
+.auth-section { padding: 6rem 2rem; display: flex; justify-content: center; }
+.editor-section { padding: 4rem 2rem; }
+
 /* NAV */
 .main-navbar {
   border-bottom: 1px solid var(--glass-border);
   background: rgba(5, 0, 5, 0.7) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.nav-menu {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-left: 3rem;
+}
+
+.nav-auth {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.user-email {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 /* BUTTONS */
@@ -123,6 +164,19 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
   border-color: var(--accent) !important;
   background: rgba(255, 255, 255, 0.06) !important;
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1) !important;
+}
+
+.editor-textarea {
+  width: 100%; 
+  min-height: 85vh; 
+  resize: none;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  line-height: 1.8;
+  padding: 4rem;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .field-label {
@@ -514,7 +568,7 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
 
 @media (max-width: 640px) {
   .chapter-box {
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.5rem !important;
   }
 }
 
@@ -563,3 +617,125 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
 /* We'll handle indenting in the JS or via CSS if we can structure it right */
 
 .hidden { display: none !important; }
+
+/* RESPONSIVE MEDIA QUERIES */
+@media (max-width: 1024px) {
+  #landing h1.big { font-size: clamp(3rem, 8vw, 5rem); }
+  .step-title { font-size: clamp(2rem, 5vw, 2.5rem); }
+}
+
+@media (max-width: 768px) {
+  /* Navigation */
+  .hamburger {
+    display: block;
+  }
+  
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(5, 0, 5, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 2rem;
+    gap: 2rem;
+    border-bottom: 1px solid var(--glass-border);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 99;
+  }
+
+  .nav-menu.open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .nav-auth {
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .nav-auth .btn-accent, .nav-auth .btn-ghost {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Global Layout */
+  section {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+  
+  .hero-section { padding: 6rem 1.5rem 4rem; }
+  .standard-section { padding: 4rem 1.5rem; }
+  .promo-section { padding: 5rem 1.5rem; }
+  .auth-section { padding: 4rem 1.5rem; }
+  .editor-section { padding: 2rem 1.5rem; }
+  
+  .editor-textarea { padding: 1.5rem; }
+
+  #main {
+    padding: 2rem 1rem;
+  }
+
+  .field-group { gap: 1.5rem; margin-bottom: 2rem; }
+  
+  /* Writer Hub */
+  #writer-nav { 
+    flex-direction: column; 
+    gap: 1.5rem; 
+    align-items: stretch; 
+  }
+  
+  .step-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+  .step-line {
+    width: 20px;
+  }
+
+  /* Components */
+  #char-grid { grid-template-columns: 1fr; }
+  
+  .outline-item { 
+    flex-direction: column; 
+    gap: 1rem; 
+  }
+
+  .btn-main { padding: 1rem 2.5rem; }
+  .btn-accent { padding: 0.85rem 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .btn-row {
+    flex-direction: column;
+  }
+  
+  .btn-row button {
+    width: 100%;
+  }
+
+  .chapter-box {
+    padding: 1.5rem 1rem !important;
+  }
+  
+  .chapter-header {
+    font-size: 2rem;
+  }
+}

@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className="animate-in">
       {/* Hero Section */}
-      <section style={{ textAlign: 'center', padding: '10rem 2rem 6rem', position: 'relative' }}>
+      <section className="hero-section" style={{ textAlign: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '300px', background: 'var(--accent)', filter: 'blur(150px)', opacity: 0.1, pointerEvents: 'none' }}></div>
         
         <p className="dk-body" style={{ letterSpacing: '0.4em', fontSize: '0.8rem', color: 'var(--accent-light)', marginBottom: '1.5rem', fontWeight: 600 }}>PREMIER DARK ROMANCE HUB</p>
@@ -42,7 +42,7 @@ export default function Home() {
       </section>
 
       {/* Services Snapshot */}
-      <section style={{ padding: '8rem 2rem', background: '#070007' }}>
+      <section className="standard-section" style={{ background: '#070007' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
             <h2 className="dk-title" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Expert Ghostwriting</h2>
@@ -69,7 +69,7 @@ export default function Home() {
       </section>
 
       {/* AI Tools Promo - Dynamic Section */}
-      <section style={{ padding: '10rem 2rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section className="promo-section" style={{ textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', bottom: '0', right: '0', width: '500px', height: '500px', background: 'var(--accent)', filter: 'blur(200px)', opacity: 0.05, pointerEvents: 'none' }}></div>
         
         <div className="glass-card" style={{ maxWidth: '900px', margin: '0 auto', padding: '6rem 3rem', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
@@ -84,7 +84,7 @@ export default function Home() {
       </section>
 
       {/* Course Promo */}
-      <section style={{ padding: '8rem 2rem', background: 'linear-gradient(180deg, #050005 0%, #0f0a1c 100%)' }}>
+      <section className="standard-section" style={{ background: 'linear-gradient(180deg, #050005 0%, #0f0a1c 100%)' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.3em', fontSize: '0.75rem', marginBottom: '1.5rem', fontWeight: 600 }}>THE ACADEMY</p>
           <h2 className="dk-title" style={{ fontSize: '3.5rem', marginBottom: '1.5rem' }}>Ghostwriting Mastery</h2>

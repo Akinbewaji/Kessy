@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Course() {
   return (
-    <div className="animate-in" style={{ padding: '8rem 2rem', maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
+    <div className="animate-in standard-section" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
       <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>THE GHOSTWRITING ACADEMY</p>
       <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(3rem, 7vw, 4.5rem)', marginBottom: '1.5rem' }}>Ghostwriting Mastery</h1>
       <p className="dk-body" style={{ color: '#a1a1aa', fontSize: '1.2rem', marginBottom: '5rem', lineHeight: 1.8, maxWidth: '800px', margin: '0 auto 5rem', fontWeight: 300 }}>

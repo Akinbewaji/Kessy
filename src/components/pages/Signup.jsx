@@ -30,7 +30,7 @@ export default function Signup() {
   }
 
   return (
-    <div className="animate-in" style={{ padding: '6rem 2rem', display: 'flex', justifyContent: 'center' }}>
+    <section className="auth-section animate-in">
       <div style={{ background: '#080808', padding: '3rem', borderRadius: '12px', border: '1px solid #1a1a1a', width: '100%', maxWidth: '400px' }}>
         <h2 className="dk-title" style={{ fontSize: '2rem', marginBottom: '0.5rem', textAlign: 'center' }}>Join Kessy.</h2>
         <p className="dk-body" style={{ color: '#a1a1aa', textAlign: 'center', marginBottom: '2rem' }}>Create an account to save your stories.</p>
@@ -77,6 +77,6 @@ export default function Signup() {
           Already have an account? <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Log In</Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

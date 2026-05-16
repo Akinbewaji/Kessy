@@ -65,7 +65,7 @@ export default function BookEditor() {
   if (!book) return null;
 
   return (
-    <div className="animate-in" style={{ padding: '4rem 2rem', maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
+    <div className="animate-in editor-section" style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
       
       {/* Sidebar / Meta */}
       <div style={{ flex: '1 1 300px' }}>
@@ -107,19 +107,7 @@ export default function BookEditor() {
       <div style={{ flex: '3 1 600px' }}>
         <div className="glass-card" style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
           <textarea
-            className="dk-input"
-            style={{ 
-              width: '100%', 
-              minHeight: '85vh', 
-              resize: 'none',
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: '1.25rem',
-              lineHeight: 1.8,
-              padding: '4rem',
-              background: 'transparent !important',
-              border: 'none !important',
-              boxShadow: 'none !important'
-            }}
+            className="dk-input editor-textarea"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Your story starts here..."

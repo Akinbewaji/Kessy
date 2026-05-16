@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
@@ -19,5 +19,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Set persistence to session so user is logged out upon closing the window/tab
+setPersistence(auth, browserSessionPersistence)
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
+
 export const db = getFirestore(app);
 export const analytics = getAnalytics(app);
