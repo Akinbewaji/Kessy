@@ -15,7 +15,7 @@ export async function callClaude(prompt, system) {
   const res = await fetch('/api/generate', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ prompt, system })
+    body: JSON.stringify({ prompt, system, cost: 1 })
   });
   
   const data = await res.json();
@@ -31,7 +31,7 @@ export async function callClaudeStream(prompt, system, onChunk) {
   const res = await fetch('/api/generate', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ prompt, system, stream: true })
+    body: JSON.stringify({ prompt, system, stream: true, cost: 10 })
   });
 
   if (!res.ok) {

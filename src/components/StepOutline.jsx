@@ -1,10 +1,16 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 
 export default function StepOutline() {
   const { genre, characters, plot, outline, setChapter } = useContext(AppContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!genre) {
+      navigate('/writer');
+    }
+  }, [genre, navigate]);
 
   const handleBack = () => {
     navigate('/writer/plot');

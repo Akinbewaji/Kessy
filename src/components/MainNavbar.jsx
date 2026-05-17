@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function MainNavbar() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, userData, logout } = useAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -60,8 +60,27 @@ export default function MainNavbar() {
         <div className="nav-auth dk-body">
           {currentUser ? (
             <>
-              <span className="user-email">{currentUser.email}</span>
-              <button onClick={handleLogout} className="btn-ghost">Logout</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                {userData && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.8rem', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+                    <span style={{ fontSize: '0.9rem' }}>🪙</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{userData.credits || 0}</span>
+                  </div>
+                )}
+                <Link to="/profile" style={{ textDecoration: 'none' }}>
+                  <div style={{ 
+                    width: '36px', height: '36px', borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, var(--accent), var(--accent-light))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.2rem', fontWeight: 'bold', color: '#fff',
+                    boxShadow: '0 0 10px rgba(139, 92, 246, 0.4)',
+                    cursor: 'pointer'
+                  }}>
+                    {currentUser.email.charAt(0).toUpperCase()}
+                  </div>
+                </Link>
+                <button onClick={handleLogout} className="btn-ghost" style={{ padding: '0.5rem 1rem' }}>Logout</button>
+              </div>
             </>
           ) : (
             <>

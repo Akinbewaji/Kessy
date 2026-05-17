@@ -1,10 +1,18 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 
 export default function StepCharacters() {
   const { genre, characters, setCharacters } = useContext(AppContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!genre) {
+      navigate('/writer');
+    }
+  }, [genre, navigate]);
+
+  if (!genre) return null;
   const [error, setError] = useState('');
 
   const handleNext = () => {

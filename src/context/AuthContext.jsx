@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     // Create user document in Firestore
     await setDoc(doc(db, 'users', cred.user.uid), {
       email,
-      subscriptionStatus: 'inactive', // or 'active' after payment
+      credits: 2, // Give 2 free credits on signup!
       createdAt: Date.now()
     });
     return cred;
@@ -52,6 +52,10 @@ export function AuthProvider({ children }) {
             setUserData(null);
           }
           setLoading(false);
+        }, (error) => {
+          console.error("Firestore onSnapshot error:", error);
+          setUserData(null);
+          setLoading(false);
         });
       } else {
         setUserData(undefined);
@@ -76,7 +80,15 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? (
+        <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050005' }}>
+          <div className="dots">
+            <div className="dot" style={{ background: 'var(--accent, #8B5CF6)' }}></div>
+            <div className="dot" style={{ background: 'var(--accent, #8B5CF6)' }}></div>
+            <div className="dot" style={{ background: 'var(--accent, #8B5CF6)' }}></div>
+          </div>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 }

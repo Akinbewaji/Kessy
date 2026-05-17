@@ -1,12 +1,23 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { callClaude } from '../api/groq';
+import { useAuth } from '../context/AuthContext';
 
 export default function StepPlot() {
   const { genre, characters, plot, setPlot, setOutline } = useContext(AppContext);
+  const { userData } = useAuth();
   const navigate = useNavigate();
+  const [ideas, setIdeas] = useState([]);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!genre) {
+      navigate('/writer');
+    }
+  }, [genre, navigate]);
+
+  if (!genre) return null;
   const [isLoading, setIsLoading] = useState(false);
   const [customConflict, setCustomConflict] = useState('');
 
@@ -21,6 +32,11 @@ export default function StepPlot() {
 
     // Save active conflict back to state
     setPlot({ ...plot, conflict: activeConflict });
+
+    if (!userData || (userData.credits || 0) < 1) {
+      navigate('/pricing', { state: { from: '/writer/plot' } });
+      return;
+    }
 
     setIsLoading(true);
 

@@ -10,7 +10,7 @@ import 'react-quill/dist/quill.snow.css';
 export default function BookEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, userData } = useAuth();
   const reactQuillRef = useRef(null);
   
   const [book, setBook] = useState(null);
@@ -70,6 +70,11 @@ export default function BookEditor() {
     const range = editor.getSelection();
     
     if (range && range.length > 0) {
+      if (!userData || (userData.credits || 0) < 1) {
+        navigate('/pricing', { state: { from: `/library/${id}` } });
+        return;
+      }
+
       const text = editor.getText(range.index, range.length);
       setSaving(true);
       setError('');

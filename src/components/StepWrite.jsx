@@ -17,19 +17,26 @@ export default function StepWrite() {
   const hasFetched = useRef(false);
 
   useEffect(() => {
+    if (!genre) {
+      navigate('/writer');
+      return;
+    }
+
     // Wait until userData is loaded (it might be null momentarily after login)
     if (currentUser && userData === undefined) return;
 
     // Only fetch if we haven't already generated the chapter
     if (!chapter && !isLoading && !hasFetched.current && outline) {
-      if (userData?.subscriptionStatus !== 'active') {
-        navigate('/pricing');
+      if (!userData || (userData.credits || 0) < 10) {
+        navigate('/pricing', { state: { from: '/writer/write' } });
         return;
       }
       hasFetched.current = true;
       generateAllChapters();
     }
-  }, [chapter, isLoading, outline, userData, currentUser, navigate]);
+  }, [chapter, isLoading, outline, userData, currentUser, navigate, genre]);
+
+  if (!genre) return null;
 
   const generateAllChapters = async () => {
     // Only set loading if we haven't started. If we are streaming, we want to hide the spinner and show the text immediately.

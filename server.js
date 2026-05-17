@@ -18,7 +18,7 @@ app.use(express.json());
 
 app.post('/api/generate', async (req, res) => {
   try {
-    const { prompt, system, stream } = req.body;
+    const { prompt, system, stream, cost = 1 } = req.body;
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -37,21 +37,51 @@ app.post('/api/generate', async (req, res) => {
     const uid = decodedToken.uid;
     const projectId = process.env.VITE_FIREBASE_PROJECT_ID;
 
-    // Check subscription status via Firestore REST API using the user's own token
+    // Check credits via Firestore REST API using the user's own token
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}`;
     const fsRes = await fetch(firestoreUrl, {
       headers: { 'Authorization': `Bearer ${idToken}` }
     });
     
     if (!fsRes.ok) {
-      return res.status(403).json({ error: 'Forbidden: Could not verify subscription status' });
+      return res.status(403).json({ error: 'Forbidden: Could not verify user profile' });
     }
     
     const fsData = await fsRes.json();
-    const subStatus = fsData.fields?.subscriptionStatus?.stringValue;
+    const credits = parseInt(fsData.fields?.credits?.integerValue || 0, 10);
     
-    if (subStatus !== 'active') {
-      return res.status(403).json({ error: 'Forbidden: Active subscription required' });
+    if (credits < cost) {
+      return res.status(403).json({ error: 'Forbidden: Insufficient credits. Please top up your balance.' });
+    }
+
+    // Deduct credits atomically via commit REST API
+    const firestoreCommitUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:commit`;
+    const commitRes = await fetch(firestoreCommitUrl, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${idToken}`, 
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({
+        writes: [
+          {
+            transform: {
+              document: `projects/${projectId}/databases/(default)/documents/users/${uid}`,
+              fieldTransforms: [
+                {
+                  fieldPath: 'credits',
+                  increment: { integerValue: -cost }
+                }
+              ]
+            }
+          }
+        ]
+      })
+    });
+
+    if (!commitRes.ok) {
+      console.error("Failed to deduct credits", await commitRes.text());
+      return res.status(500).json({ error: 'Internal Server Error: Failed to deduct credits' });
     }
 
     const apiKey = process.env.GROQ_API_KEY;

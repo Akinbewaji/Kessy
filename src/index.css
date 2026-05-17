@@ -175,6 +175,10 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
   background: rgba(255, 255, 255, 0.06) !important;
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1) !important;
 }
+.dk-input option {
+  background: #0f0a1c;
+  color: #fff;
+}
 
 .editor-textarea {
   width: 100%; 

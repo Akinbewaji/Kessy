@@ -16,6 +16,7 @@ import Signup from './components/pages/Signup';
 import Pricing from './components/pages/Pricing';
 import Library from './components/pages/Library';
 import BookEditor from './components/pages/BookEditor';
+import Profile from './components/pages/Profile';
 
 // AI Writer Tool Steps
 import StepLanding from './components/StepLanding';
@@ -67,6 +68,11 @@ function App() {
           <Route path="/pricing" element={<Pricing />} />
 
           {/* Protected Library Pages */}
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
           <Route path="/library" element={
             <ProtectedRoute>
               <Library />

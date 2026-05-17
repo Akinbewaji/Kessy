@@ -1,14 +1,24 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { callClaude } from '../api/groq';
+import { useAuth } from '../context/AuthContext';
 
 export default function StepCover() {
   const { genre, characters, plot, coverUrl, setCoverUrl } = useContext(AppContext);
+  const { userData } = useAuth();
   const navigate = useNavigate();
   const [userIdea, setUserIdea] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!genre) {
+      navigate('/writer');
+    }
+  }, [genre, navigate]);
+
+  if (!genre) return null; // Prevent crash before redirect
 
   const handleBack = () => {
     navigate('/writer/outline');
@@ -21,6 +31,11 @@ export default function StepCover() {
   };
 
   const handleGenerate = async () => {
+    if (!userData || (userData.credits || 0) < 1) {
+      navigate('/pricing', { state: { from: '/writer/cover' } });
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
