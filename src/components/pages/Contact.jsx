@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet';
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -13,6 +14,11 @@ export default function Contact() {
 
   return (
     <div className="animate-in standard-section" style={{ maxWidth: '700px', margin: '0 auto' }}>
+      <Helmet>
+        <title>Contact - DigitalKessy</title>
+        <meta name="description" content="Get in touch for bespoke dark romance ghostwriting services or questions about the Ghostwriting Mastery course." />
+      </Helmet>
+
       <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
         <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>GET IN TOUCH</p>
         <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1.5rem' }}>Contact Me</h1>
@@ -62,7 +68,7 @@ export default function Contact() {
           </div>
         )}
 
-        <button type="submit" className="btn-accent dk-body" style={{ width: '100%', padding: '1.2rem', fontSize: '1rem' }}>SEND MESSAGE</button>
+        <button type="submit" className="btn-accent btn-large btn-full dk-body">SEND MESSAGE</button>
       </form>
 
       <div style={{ marginTop: '4rem', textAlign: 'center' }}>

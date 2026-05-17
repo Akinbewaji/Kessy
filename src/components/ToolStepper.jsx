@@ -22,7 +22,7 @@ export default function ToolStepper() {
   return (
     <div id="writer-nav">
       <div id="nav-brand" className="dk-title" style={{ color: genre ? genre.color : 'var(--accent-light)', fontSize: '1.2rem', fontWeight: 600 }}>
-        Digital Kessy
+        DigitalKessy
       </div>
       <div id="steps-bar" className="dk-body">
         {steps.map((s, i) => {

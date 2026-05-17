@@ -1,8 +1,14 @@
 import React from 'react';
+import { Helmet } from 'react-helmet';
 
 export default function Course() {
   return (
     <div className="animate-in standard-section" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
+      <Helmet>
+        <title>Ghostwriting Mastery Course - DigitalKessy</title>
+        <meta name="description" content="Unlock the secrets to building a lucrative career writing dark romance and fantasy fiction with the Ghostwriting Mastery course." />
+      </Helmet>
+
       <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>THE GHOSTWRITING ACADEMY</p>
       <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(3rem, 7vw, 4.5rem)', marginBottom: '1.5rem' }}>Ghostwriting Mastery</h1>
       <p className="dk-body" style={{ color: '#a1a1aa', fontSize: '1.2rem', marginBottom: '5rem', lineHeight: 1.8, maxWidth: '800px', margin: '0 auto 5rem', fontWeight: 300 }}>
@@ -30,7 +36,7 @@ export default function Course() {
 
       <div style={{ padding: '4rem 2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
         <h3 className="dk-title" style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Ready to start your journey?</h3>
-        <a href="https://selar.co/placeholder" target="_blank" rel="noreferrer" className="btn-accent dk-body" style={{ textDecoration: 'none', padding: '1.2rem 4rem', fontSize: '1.1rem', display: 'inline-block' }}>
+        <a href="https://selar.co/placeholder" target="_blank" rel="noreferrer" className="btn-accent btn-large dk-body" style={{ textDecoration: 'none', display: 'inline-block' }}>
           ENROLL ON SELAR NOW
         </a>
         <p className="dk-body" style={{ color: '#666', marginTop: '1.5rem', fontSize: '0.85rem' }}>Limited slots available for personalized mentorship.</p>

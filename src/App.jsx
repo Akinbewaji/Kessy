@@ -13,6 +13,7 @@ import Course from './components/pages/Course';
 import Contact from './components/pages/Contact';
 import Login from './components/pages/Login';
 import Signup from './components/pages/Signup';
+import Pricing from './components/pages/Pricing';
 import Library from './components/pages/Library';
 import BookEditor from './components/pages/BookEditor';
 
@@ -63,6 +64,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/pricing" element={<Pricing />} />
 
           {/* Protected Library Pages */}
           <Route path="/library" element={

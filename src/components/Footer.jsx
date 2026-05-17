@@ -12,7 +12,7 @@ export default function Footer() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
         <div style={{ flex: '1 1 300px' }}>
           <div className="dk-title" style={{ fontSize: '1.5rem', marginBottom: '1rem', letterSpacing: '2px' }}>
-            KESSY<span style={{ color: 'var(--accent)' }}>.</span>
+            DIGITALKESSY<span style={{ color: 'var(--accent)' }}>.</span>
           </div>
           <p className="dk-body" style={{ color: '#a1a1aa', lineHeight: 1.6, maxWidth: '300px' }}>
             Elevating dark romance. Professional ghostwriting services and advanced AI tools for writers who want to craft irresistible stories.
@@ -39,7 +39,7 @@ export default function Footer() {
         </div>
       </div>
       <div style={{ textAlign: 'center', marginTop: '4rem', color: '#666', fontSize: '0.85rem' }} className="dk-body">
-        &copy; {new Date().getFullYear()} Digital Kessy. All rights reserved.
+        &copy; {new Date().getFullYear()} DigitalKessy. All rights reserved.
       </div>
     </footer>
   );

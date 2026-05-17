@@ -38,7 +38,7 @@ export default function MainNavbar() {
       zIndex: 100
     }}>
       <div className="nav-brand dk-title" style={{ fontSize: '1.5rem', margin: 0, letterSpacing: '2px' }}>
-        <Link to="/" onClick={closeMenu} style={{ color: 'white', textDecoration: 'none' }}>KESSY<span style={{ color: 'var(--accent)' }}>.</span></Link>
+        <Link to="/" onClick={closeMenu} style={{ color: 'white', textDecoration: 'none' }}>DIGITALKESSY<span style={{ color: 'var(--accent)' }}>.</span></Link>
       </div>
 
       <button className="hamburger" onClick={toggleMenu} aria-label="Toggle menu">

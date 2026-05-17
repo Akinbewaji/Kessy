@@ -53,7 +53,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button disabled={loading} className="btn-accent dk-body" style={{ width: '100%', marginBottom: '1.5rem' }}>
+          <button disabled={loading} className="btn-accent btn-full dk-body" style={{ marginBottom: '1.5rem' }}>
             Log In
           </button>
         </form>

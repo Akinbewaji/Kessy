@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { callClaude } from '../api/groq';
+import { callClaudeStream } from '../api/groq';
 import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 export default function StepWrite() {
   const { genre, characters, plot, outline, coverUrl, chapter, setChapter, resetApp } = useContext(AppContext);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, userData } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [savingToLib, setSavingToLib] = useState(false);
   const [error, setError] = useState('');
@@ -17,18 +17,27 @@ export default function StepWrite() {
   const hasFetched = useRef(false);
 
   useEffect(() => {
+    // Wait until userData is loaded (it might be null momentarily after login)
+    if (currentUser && userData === undefined) return;
+
     // Only fetch if we haven't already generated the chapter
     if (!chapter && !isLoading && !hasFetched.current && outline) {
+      if (userData?.subscriptionStatus !== 'active') {
+        navigate('/pricing');
+        return;
+      }
       hasFetched.current = true;
       generateAllChapters();
     }
-  }, [chapter, isLoading, outline]);
+  }, [chapter, isLoading, outline, userData, currentUser, navigate]);
 
   const generateAllChapters = async () => {
+    // Only set loading if we haven't started. If we are streaming, we want to hide the spinner and show the text immediately.
     setIsLoading(true);
     setError('');
     
     let currentManuscript = '';
+    setChapter('');
     
     try {
       for (let i = 0; i < outline.length; i++) {
@@ -47,10 +56,16 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
 
         const system = `You are a dark romance author specializing in ${genre.name} fiction. Your style: cinematic, emotionally raw, fast-paced with short punchy paragraphs. Heavy dialogue. Forbidden tension. Every scene pushes the story forward.`;
         
-        const result = await callClaude(prompt, system);
-        const formattedResult = `Chapter ${ch.chapter}: ${ch.title}\n\n${result}`;
+        const header = `Chapter ${ch.chapter}: ${ch.title}\n\n`;
+        const prefix = currentManuscript + (i > 0 ? '\n\n\n' : '') + header;
         
-        currentManuscript += (i > 0 ? '\n\n\n' : '') + formattedResult;
+        setIsLoading(false); // Hide spinner, let user watch the text stream
+        
+        const result = await callClaudeStream(prompt, system, (chunk) => {
+          setChapter(prefix + chunk);
+        });
+        
+        currentManuscript = prefix + result;
         setChapter(currentManuscript);
       }
     } catch(e) {

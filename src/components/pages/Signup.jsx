@@ -32,7 +32,7 @@ export default function Signup() {
   return (
     <section className="auth-section animate-in">
       <div style={{ background: '#080808', padding: '3rem', borderRadius: '12px', border: '1px solid #1a1a1a', width: '100%', maxWidth: '400px' }}>
-        <h2 className="dk-title" style={{ fontSize: '2rem', marginBottom: '0.5rem', textAlign: 'center' }}>Join Kessy.</h2>
+        <h2 className="dk-title" style={{ fontSize: '2rem', marginBottom: '0.5rem', textAlign: 'center' }}>Join DigitalKessy.</h2>
         <p className="dk-body" style={{ color: '#a1a1aa', textAlign: 'center', marginBottom: '2rem' }}>Create an account to save your stories.</p>
         
         {error && <div className="error-msg animate-in">{error}</div>}
@@ -68,7 +68,7 @@ export default function Signup() {
               onChange={(e) => setPasswordConfirm(e.target.value)}
             />
           </div>
-          <button disabled={loading} className="btn-accent dk-body" style={{ width: '100%', marginBottom: '1.5rem' }}>
+          <button disabled={loading} className="btn-accent btn-full dk-body" style={{ marginBottom: '1.5rem' }}>
             Sign Up
           </button>
         </form>

@@ -5,7 +5,8 @@ import {
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -15,10 +16,18 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userData, setUserData] = useState(undefined);
   const [loading, setLoading] = useState(true);
 
-  function signup(email, password) {
-    return createUserWithEmailAndPassword(auth, email, password);
+  async function signup(email, password) {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // Create user document in Firestore
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email,
+      subscriptionStatus: 'inactive', // or 'active' after payment
+      createdAt: Date.now()
+    });
+    return cred;
   }
 
   function login(email, password) {
@@ -30,16 +39,36 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    let unsubDoc;
+    
     const unsubscribe = onAuthStateChanged(auth, user => {
       setCurrentUser(user);
-      setLoading(false);
+      
+      if (user) {
+        unsubDoc = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            setUserData(docSnap.data());
+          } else {
+            setUserData(null);
+          }
+          setLoading(false);
+        });
+      } else {
+        setUserData(undefined);
+        setLoading(false);
+        if (unsubDoc) unsubDoc();
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      if (unsubDoc) unsubDoc();
+    };
   }, []);
 
   const value = {
     currentUser,
+    userData,
     login,
     signup,
     logout

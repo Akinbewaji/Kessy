@@ -13,7 +13,7 @@ export default function StepLanding() {
 
   return (
     <div id="landing">
-      <p className="eyebrow dk-body">✦ DIGITAL KESSY PRESENTS ✦</p>
+      <p className="eyebrow dk-body">✦ DIGITALKESSY PRESENTS ✦</p>
       <h1 className="big dk-title">
         Ghostwriting<span>Studio</span>
       </h1>

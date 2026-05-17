@@ -37,7 +37,7 @@ export default function Library() {
           <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', margin: 0 }}>Your Library</h1>
           <p className="dk-body" style={{ color: '#a1a1aa', marginTop: '1rem', fontSize: '1.1rem', fontWeight: 300 }}>All your generated stories and drafts in one place.</p>
         </div>
-        <Link to="/writer" className="btn-accent dk-body" style={{ textDecoration: 'none', padding: '1rem 2rem' }}>+ NEW STORY</Link>
+        <Link to="/writer" className="btn-accent dk-body" style={{ textDecoration: 'none' }}>+ NEW STORY</Link>
       </div>
 
       {loading ? (

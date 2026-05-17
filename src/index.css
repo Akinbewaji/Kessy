@@ -149,6 +149,16 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
   border-color: #6B7280; 
 }
 
+.btn-large {
+  padding: 1.2rem 4rem !important;
+  font-size: 1rem !important;
+}
+
+.btn-full {
+  width: 100% !important;
+  text-align: center;
+}
+
 /* INPUTS */
 .dk-input {
   background: rgba(255, 255, 255, 0.03) !important;
@@ -187,6 +197,42 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
   margin-bottom: 0.6rem;
   display: block;
 }
+
+/* QUILL EDITOR OVERRIDES */
+.dk-quill-editor {
+  font-family: 'Montserrat', sans-serif;
+}
+.dk-quill-editor .ql-toolbar {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: none;
+}
+.dk-quill-editor .ql-toolbar button:hover,
+.dk-quill-editor .ql-toolbar button:focus,
+.dk-quill-editor .ql-toolbar .ql-active {
+  background: rgba(139, 92, 246, 0.2);
+}
+.dk-quill-editor .ql-toolbar .ql-stroke { stroke: #a1a1aa; }
+.dk-quill-editor .ql-toolbar .ql-fill { fill: #a1a1aa; }
+.dk-quill-editor .ql-toolbar .ql-picker { color: #a1a1aa; }
+.dk-quill-editor .ql-container {
+  border: 1px solid var(--glass-border);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background: transparent;
+  min-height: 75vh;
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #e4e4e7;
+  font-family: 'Cormorant Garamond', serif;
+}
+.dk-quill-editor .ql-editor {
+  padding: 4rem;
+  min-height: 75vh;
+}
+.dk-quill-editor .ql-editor p { margin-bottom: 1rem; }
 
 /* ERROR MESSAGE */
 .error-msg {
@@ -687,6 +733,7 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
   .editor-section { padding: 2rem 1.5rem; }
   
   .editor-textarea { padding: 1.5rem; }
+  .dk-quill-editor .ql-editor { padding: 1.5rem; }
 
   #main {
     padding: 2rem 1rem;
@@ -720,6 +767,7 @@ h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
 
   .btn-main { padding: 1rem 2.5rem; }
   .btn-accent { padding: 0.85rem 1.5rem; }
+  .btn-large { padding: 1rem 2.5rem !important; font-size: 0.9rem !important; }
 }
 
 @media (max-width: 480px) {

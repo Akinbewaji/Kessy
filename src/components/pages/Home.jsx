@@ -1,9 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 export default function Home() {
   return (
     <div className="animate-in">
+      <Helmet>
+        <title>DigitalKessy - Dark Romance Ghostwriting & AI Tools</title>
+        <meta name="description" content="Craft stories that stay in the shadows. Expert ghostwriting services and advanced AI writer tools for dark romance fiction authors." />
+        <meta property="og:title" content="DigitalKessy - Dark Romance Ghostwriting & AI Tools" />
+        <meta property="og:description" content="Craft stories that stay in the shadows. Expert ghostwriting services and advanced AI writer tools for dark romance fiction authors." />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       {/* Hero Section */}
       <section className="hero-section" style={{ textAlign: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '300px', background: 'var(--accent)', filter: 'blur(150px)', opacity: 0.1, pointerEvents: 'none' }}></div>
@@ -16,10 +25,10 @@ export default function Home() {
           From bespoke ghostwriting for bestsellers to advanced AI tools for independent authors. Elevate your dark romance fiction to professional heights.
         </p>
         <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link to="/services" className="btn-accent dk-body" style={{ textDecoration: 'none', padding: '1rem 3rem' }}>
+          <Link to="/services" className="btn-accent btn-large dk-body" style={{ textDecoration: 'none' }}>
             HIRE A GHOSTWRITER
           </Link>
-          <Link to="/writer" className="btn-accent outline dk-body" style={{ textDecoration: 'none', padding: '1rem 3rem' }}>
+          <Link to="/writer" className="btn-accent outline btn-large dk-body" style={{ textDecoration: 'none' }}>
             EXPLORE AI TOOLS
           </Link>
         </div>
@@ -77,7 +86,7 @@ export default function Home() {
           <p className="dk-body" style={{ color: '#a1a1aa', maxWidth: '600px', margin: '0 auto 3.5rem', fontSize: '1.1rem', lineHeight: 1.8 }}>
             I built the tool I wanted to use. Access proprietary algorithms fine-tuned on top-selling dark romance structures. Generate plots, write chapters, and design covers in seconds.
           </p>
-          <Link to="/writer" className="btn-accent dk-body" style={{ textDecoration: 'none', padding: '1.2rem 4rem', fontSize: '1rem' }}>
+          <Link to="/writer" className="btn-accent btn-large dk-body" style={{ textDecoration: 'none' }}>
             LAUNCH WRITER HUB
           </Link>
         </div>
@@ -91,7 +100,7 @@ export default function Home() {
           <p className="dk-body" style={{ color: '#d1d1d6', marginBottom: '3.5rem', fontSize: '1.2rem', lineHeight: 1.8, fontWeight: 300 }}>
             Stop dreaming and start earning. Learn the exact systems I use to charge premium rates for dark romance fiction and build a sustainable writing career.
           </p>
-          <Link to="/course" className="btn-accent outline dk-body" style={{ textDecoration: 'none', padding: '1rem 3.5rem', border: '1px solid #fff', color: '#fff' }}>
+          <Link to="/course" className="btn-accent outline btn-large dk-body" style={{ textDecoration: 'none', border: '1px solid #fff', color: '#fff' }}>
             EXPLORE THE CURRICULUM
           </Link>
         </div>

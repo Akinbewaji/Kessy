@@ -1,9 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 export default function Services() {
   return (
     <div className="animate-in standard-section" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <Helmet>
+        <title>Ghostwriting Services - DigitalKessy</title>
+        <meta name="description" content="Hire a master ghostwriter specializing in Mafia, Billionaire, and Werewolf dark romance. Get high-tension, addictive manuscripts." />
+      </Helmet>
+
       <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
         <p className="dk-body" style={{ color: 'var(--accent-light)', letterSpacing: '0.4em', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>BESPOKE LITERARY SERVICES</p>
         <h1 className="dk-title premium-gradient-text" style={{ fontSize: 'clamp(3rem, 6vw, 4.5rem)', marginBottom: '1.5rem' }}>Hire a Master Ghostwriter</h1>
@@ -20,7 +26,7 @@ export default function Services() {
           <p className="dk-body" style={{ color: '#888', marginBottom: '3rem', flex: 1, lineHeight: 1.7, fontSize: '1rem' }}>
             Have a concept but no idea how to structure it? I will build a comprehensive, chapter-by-chapter outline with character arcs, pacing maps, and guaranteed tension points.
           </p>
-          <Link to="/contact" className="btn-ghost dk-body" style={{ textDecoration: 'none', textAlign: 'center', width: '100%', padding: '1rem' }}>INQUIRE FOR PRICING</Link>
+          <Link to="/contact" className="btn-ghost btn-full dk-body" style={{ textDecoration: 'none' }}>INQUIRE FOR PRICING</Link>
         </div>
 
         {/* Tier 2 */}
@@ -31,7 +37,7 @@ export default function Services() {
           <p className="dk-body" style={{ color: '#d1d1d6', marginBottom: '3rem', flex: 1, lineHeight: 1.7, fontSize: '1rem' }}>
             You provide the trope, I provide the book. 50k to 100k word manuscripts written with my signature dark romance style, fast-paced dialogue, and unputdownable steamy tension.
           </p>
-          <Link to="/contact" className="btn-accent dk-body" style={{ textDecoration: 'none', textAlign: 'center', width: '100%', padding: '1rem' }}>BOOK YOUR SLOT</Link>
+          <Link to="/contact" className="btn-accent btn-full dk-body" style={{ textDecoration: 'none' }}>BOOK YOUR SLOT</Link>
         </div>
 
         {/* Tier 3 */}
@@ -41,7 +47,7 @@ export default function Services() {
           <p className="dk-body" style={{ color: '#888', marginBottom: '3rem', flex: 1, lineHeight: 1.7, fontSize: '1rem' }}>
             Written a draft but it feels flat? I'll review your manuscript to inject more chemistry, fix structural pacing issues, and elevate the dark romance elements to a pro level.
           </p>
-          <Link to="/contact" className="btn-ghost dk-body" style={{ textDecoration: 'none', textAlign: 'center', width: '100%', padding: '1rem' }}>INQUIRE FOR PRICING</Link>
+          <Link to="/contact" className="btn-ghost btn-full dk-body" style={{ textDecoration: 'none' }}>INQUIRE FOR PRICING</Link>
         </div>
       </div>
 
@@ -50,7 +56,7 @@ export default function Services() {
         <p className="dk-body" style={{ color: '#a1a1aa', marginBottom: '3rem', maxWidth: '600px', margin: '0 auto 3rem', lineHeight: 1.8 }}>
           Access my proprietary AI tools designed specifically for the dark romance genre. The same frameworks I use, powered by AI.
         </p>
-        <Link to="/writer" className="btn-accent outline dk-body" style={{ textDecoration: 'none', padding: '1rem 3rem' }}>GO TO AI WRITER TOOLS</Link>
+        <Link to="/writer" className="btn-accent outline btn-large dk-body" style={{ textDecoration: 'none' }}>GO TO AI WRITER TOOLS</Link>
       </div>
     </div>
   );
