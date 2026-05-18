@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
     await setDoc(doc(db, 'users', cred.user.uid), {
       email,
       credits: 2, // Give 2 free credits on signup!
+      role: 'user', // Default role
       createdAt: Date.now()
     });
     return cred;
@@ -45,9 +46,30 @@ export function AuthProvider({ children }) {
       setCurrentUser(user);
       
       if (user) {
-        unsubDoc = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
+        const ownerUids = ['vlhRkgC30kbqFEQTW6Hs6afSvxF3', 'egVP5rLFMXNPe2OflH6k4phzeTL2'];
+        unsubDoc = onSnapshot(doc(db, 'users', user.uid), async (docSnap) => {
           if (docSnap.exists()) {
-            setUserData(docSnap.data());
+            const data = docSnap.data();
+            // Hardcode owner UIDs to always be admin
+            if (ownerUids.includes(user.uid)) {
+              data.role = 'admin';
+            }
+            
+            // Attach permissions
+            data.permissions = { canBypassCredits: false, canManageUsers: false, canManageRoles: false };
+            if (data.role === 'admin') {
+              data.permissions = { canBypassCredits: true, canManageUsers: true, canManageRoles: true };
+            } else if (data.role && data.role !== 'user') {
+              import('firebase/firestore').then(async ({ getDoc, doc: fdoc }) => {
+                const roleDoc = await getDoc(fdoc(db, 'roles', data.role));
+                if (roleDoc.exists()) {
+                  data.permissions = roleDoc.data();
+                }
+                setUserData({ ...data }); // Trigger update with permissions
+              });
+            }
+            
+            setUserData(data);
           } else {
             setUserData(null);
           }

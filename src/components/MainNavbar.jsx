@@ -55,6 +55,10 @@ export default function MainNavbar() {
           {currentUser && (
             <Link to="/library" onClick={closeMenu} style={{ color: isActive('/library') ? 'var(--accent)' : '#a1a1aa', textDecoration: 'none', transition: 'color 0.2s' }}>Library</Link>
           )}
+          
+          {currentUser && userData?.role === 'admin' && (
+            <Link to="/admin" onClick={closeMenu} style={{ color: isActive('/admin') ? '#fff' : 'var(--accent)', fontWeight: 'bold', textDecoration: 'none', transition: 'color 0.2s', background: 'rgba(139, 92, 246, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>Admin Panel</Link>
+          )}
         </div>
 
         <div className="nav-auth dk-body">

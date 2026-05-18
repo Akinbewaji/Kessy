@@ -33,7 +33,7 @@ export default function StepPlot() {
     // Save active conflict back to state
     setPlot({ ...plot, conflict: activeConflict });
 
-    if (!userData || (userData.credits || 0) < 1) {
+    if (!userData || ((userData.credits || 0) < 1 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
       navigate('/pricing', { state: { from: '/writer/plot' } });
       return;
     }

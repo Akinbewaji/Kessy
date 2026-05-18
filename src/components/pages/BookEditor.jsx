@@ -70,7 +70,7 @@ export default function BookEditor() {
     const range = editor.getSelection();
     
     if (range && range.length > 0) {
-      if (!userData || (userData.credits || 0) < 1) {
+      if (!userData || ((userData.credits || 0) < 1 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
         navigate('/pricing', { state: { from: `/library/${id}` } });
         return;
       }

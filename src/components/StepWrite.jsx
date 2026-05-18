@@ -27,7 +27,7 @@ export default function StepWrite() {
 
     // Only fetch if we haven't already generated the chapter
     if (!chapter && !isLoading && !hasFetched.current && outline) {
-      if (!userData || (userData.credits || 0) < 10) {
+      if (!userData || ((userData.credits || 0) < 10 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
         navigate('/pricing', { state: { from: '/writer/write' } });
         return;
       }

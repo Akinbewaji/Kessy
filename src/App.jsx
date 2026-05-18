@@ -17,6 +17,7 @@ import Pricing from './components/pages/Pricing';
 import Library from './components/pages/Library';
 import BookEditor from './components/pages/BookEditor';
 import Profile from './components/pages/Profile';
+import AdminDashboard from './components/pages/AdminDashboard';
 
 // AI Writer Tool Steps
 import StepLanding from './components/StepLanding';
@@ -71,6 +72,11 @@ function App() {
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           } />
           <Route path="/library" element={

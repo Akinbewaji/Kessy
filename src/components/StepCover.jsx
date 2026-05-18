@@ -10,6 +10,7 @@ export default function StepCover() {
   const navigate = useNavigate();
   const [userIdea, setUserIdea] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function StepCover() {
   };
 
   const handleGenerate = async () => {
-    if (!userData || (userData.credits || 0) < 1) {
+    if (!userData || ((userData.credits || 0) < 1 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
       navigate('/pricing', { state: { from: '/writer/cover' } });
       return;
     }
@@ -61,11 +62,12 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
       const safePrompt = result.substring(0, 300);
       const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=512&height=768&nologo=true&seed=${seed}`;
       
+      setImageLoading(true); // Start image loading spinner
       setCoverUrl(imageUrl);
     } catch (e) {
       setError('Could not generate cover art. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Hide the prompt-generation spinner
     }
   };
 
@@ -88,10 +90,12 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
         </div>
       </div>
 
-      {isLoading && (
-        <div id="loading-screen" className="animate-in" style={{ padding: '2rem 0' }}>
-          <p className="loading-title dk-title" style={{ color: 'var(--accent)' }}>Conjuring the imagery...</p>
-          <div className="dots">
+      {(isLoading || imageLoading) && (
+        <div id="loading-screen" className="animate-in" style={{ padding: '2rem 0', textAlign: 'center' }}>
+          <p className="loading-title dk-title" style={{ color: 'var(--accent)' }}>
+            {isLoading ? 'Conjuring the imagery...' : 'Painting the final picture... (This takes a moment)'}
+          </p>
+          <div className="dots" style={{ justifyContent: 'center' }}>
             <div className="dot"></div>
             <div className="dot"></div>
             <div className="dot"></div>
@@ -102,24 +106,30 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
       {error && <div className="error-msg animate-in">{error}</div>}
 
       {coverUrl && !isLoading && (
-        <div className="cover-preview animate-in" style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+        <div className="cover-preview animate-in" style={{ display: imageLoading ? 'none' : 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
           <div style={{ padding: '1rem', border: `1px solid ${genre.color}44`, borderRadius: '4px', background: '#080808' }}>
             <img 
               src={coverUrl} 
               alt="Generated Cover" 
               style={{ width: '100%', maxWidth: '300px', borderRadius: '2px', display: 'block' }} 
+              onLoad={() => setImageLoading(false)}
+              onError={(e) => {
+                setImageLoading(false);
+                setError('The AI failed to paint the image. It might have been blocked by safety filters. Please try a different prompt or idea.');
+                setCoverUrl(null);
+              }}
             />
           </div>
         </div>
       )}
 
       <div className="btn-row">
-        <button className="btn-ghost dk-body" onClick={handleBack} disabled={isLoading}>← Back</button>
-        <button className="btn-accent outline dk-body" onClick={handleGenerate} disabled={isLoading}>
+        <button className="btn-ghost dk-body" onClick={handleBack} disabled={isLoading || imageLoading}>← Back</button>
+        <button className="btn-accent outline dk-body" onClick={handleGenerate} disabled={isLoading || imageLoading}>
           {coverUrl ? 'Regenerate Cover' : 'Generate Cover'}
         </button>
-        {coverUrl && (
-          <button className="btn-accent dk-body" onClick={handleNext} disabled={isLoading}>
+        {coverUrl && !imageLoading && (
+          <button className="btn-accent dk-body" onClick={handleNext} disabled={isLoading || imageLoading}>
             Write Full Story →
           </button>
         )}

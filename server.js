@@ -49,39 +49,59 @@ app.post('/api/generate', async (req, res) => {
     
     const fsData = await fsRes.json();
     const credits = parseInt(fsData.fields?.credits?.integerValue || 0, 10);
+    const role = fsData.fields?.role?.stringValue || 'user';
     
-    if (credits < cost) {
+    let canBypass = false;
+    if (role === 'admin') {
+      canBypass = true;
+    } else if (role !== 'user') {
+      // Check custom role permissions
+      const roleUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/roles/${role}`;
+      const roleRes = await fetch(roleUrl, {
+        headers: { 'Authorization': `Bearer ${idToken}` }
+      });
+      if (roleRes.ok) {
+        const roleData = await roleRes.json();
+        if (roleData.fields?.canBypassCredits?.booleanValue === true) {
+          canBypass = true;
+        }
+      }
+    }
+    
+    if (!canBypass && credits < cost) {
       return res.status(403).json({ error: 'Forbidden: Insufficient credits. Please top up your balance.' });
     }
 
-    // Deduct credits atomically via commit REST API
-    const firestoreCommitUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:commit`;
-    const commitRes = await fetch(firestoreCommitUrl, {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${idToken}`, 
-        'Content-Type': 'application/json' 
-      },
-      body: JSON.stringify({
-        writes: [
-          {
-            transform: {
-              document: `projects/${projectId}/databases/(default)/documents/users/${uid}`,
-              fieldTransforms: [
-                {
-                  fieldPath: 'credits',
-                  increment: { integerValue: -cost }
-                }
-              ]
+    // Deduct credits atomically via commit REST API (only if not bypassing)
+    if (!canBypass) {
+      const firestoreCommitUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:commit`;
+      const commitRes = await fetch(firestoreCommitUrl, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${idToken}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({
+          writes: [
+            {
+              transform: {
+                document: `projects/${projectId}/databases/(default)/documents/users/${uid}`,
+                fieldTransforms: [
+                  {
+                    fieldPath: 'credits',
+                    increment: { integerValue: -cost }
+                  }
+                ]
+              }
             }
-          }
-        ]
-      })
-    });
+          ]
+        })
+      });
 
-    if (!commitRes.ok) {
-      console.error("Failed to deduct credits", await commitRes.text());
-      return res.status(500).json({ error: 'Internal Server Error: Failed to deduct credits' });
+      if (!commitRes.ok) {
+        console.error("Failed to deduct credits", await commitRes.text());
+        return res.status(500).json({ error: 'Internal Server Error: Failed to deduct credits' });
+      }
     }
 
     const apiKey = process.env.GROQ_API_KEY;
