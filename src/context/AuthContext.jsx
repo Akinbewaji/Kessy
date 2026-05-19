@@ -46,14 +46,20 @@ export function AuthProvider({ children }) {
       setCurrentUser(user);
       
       if (user) {
-        const ownerUids = ['vlhRkgC30kbqFEQTW6Hs6afSvxF3', 'egVP5rLFMXNPe2OflH6k4phzeTL2'];
+        const ownerEmails = ['digitalkessy350@gmail.com', 'akintomiwabewaji@gmail.com'];
         unsubDoc = onSnapshot(doc(db, 'users', user.uid), async (docSnap) => {
+          let data = null;
           if (docSnap.exists()) {
-            const data = docSnap.data();
-            // Hardcode owner UIDs to always be admin
-            if (ownerUids.includes(user.uid)) {
-              data.role = 'admin';
-            }
+            data = docSnap.data();
+          } else {
+            // Handle users who logged in via Google or missing doc
+            data = { email: user.email, credits: 0 };
+          }
+          
+          // Hardcode owner emails to always be admin
+          if (user.email && ownerEmails.includes(user.email.toLowerCase())) {
+            data.role = 'admin';
+          }
             
             // Attach permissions
             data.permissions = { canBypassCredits: false, canManageUsers: false, canManageRoles: false };
@@ -70,9 +76,6 @@ export function AuthProvider({ children }) {
             }
             
             setUserData(data);
-          } else {
-            setUserData(null);
-          }
           setLoading(false);
         }, (error) => {
           console.error("Firestore onSnapshot error:", error);
