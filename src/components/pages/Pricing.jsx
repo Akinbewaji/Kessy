@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PaystackButton } from 'react-paystack';
 import { db } from '../../firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, setDoc, increment } from 'firebase/firestore';
 
 export default function Pricing() {
   const { currentUser } = useAuth();
@@ -27,10 +27,11 @@ export default function Pricing() {
       if (currentUser) {
         setSelectedPackage(pkg); // Just for the success modal UI to show the correct credits
         const userRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userRef, {
+        await setDoc(userRef, {
+          email: currentUser.email, // Ensure email is there if creating for the first time
           credits: increment(pkg.credits),
           updatedAt: Date.now()
-        });
+        }, { merge: true });
         setShowSuccessModal(true);
       }
     } catch (e) {
