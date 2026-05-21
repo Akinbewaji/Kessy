@@ -13,12 +13,12 @@ export default function Pricing() {
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const [selectedPackage, setSelectedPackage] = useState({ id: 'pro', name: 'Pro', price: 20000, credits: 60 });
+  const [selectedPackage, setSelectedPackage] = useState({ id: 'pro', name: 'Pro', price: 10000, credits: 120 });
 
   const packages = [
-    { id: 'starter', name: 'Starter', price: 15000, credits: 25 },
-    { id: 'pro', name: 'Pro', price: 20000, credits: 60 },
-    { id: 'master', name: 'Master', price: 30000, credits: 150 }
+    { id: 'starter', name: 'Starter', price: 7500, credits: 50 },
+    { id: 'pro', name: 'Pro', price: 10000, credits: 120 },
+    { id: 'master', name: 'Master', price: 15000, credits: 300 }
   ];
 
   const onSuccess = async (reference, pkg) => {
