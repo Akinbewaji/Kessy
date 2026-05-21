@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     // Create user document in Firestore
     await setDoc(doc(db, 'users', cred.user.uid), {
       email,
-      credits: 2, // Give 2 free credits on signup!
+      credits: 1, // Give 1 free credit on signup!
       role: 'user', // Default role
       createdAt: Date.now()
     });
