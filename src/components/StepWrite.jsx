@@ -7,86 +7,136 @@ import { collection, addDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 
 export default function StepWrite() {
-  const { genre, characters, plot, outline, coverUrl, chapter, setChapter, resetApp } = useContext(AppContext);
+  const { genre, characters, plot, outline, coverUrl, chapters, setChapters, resetApp } = useContext(AppContext);
   const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Which chapter is actively generating right now
+  const [activeGeneratingChapter, setActiveGeneratingChapter] = useState(null);
+  // Is a batch generation process currently running
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [savingToLib, setSavingToLib] = useState(false);
   const [error, setError] = useState('');
   const [isWide, setIsWide] = useState(false);
-  const hasFetched = useRef(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Track if we should stop batch generation
+  const stopBatchRef = useRef(false);
 
   useEffect(() => {
     if (!genre) {
       navigate('/writer');
       return;
     }
+  }, [genre, navigate]);
 
-    // Wait until userData is loaded (it might be null momentarily after login)
-    if (currentUser && userData === undefined) return;
+  if (!genre || !outline) return null;
 
-    // Only fetch if we haven't already generated the chapter
-    if (!chapter && !isLoading && !hasFetched.current && outline) {
-      if (!userData || ((userData.credits || 0) < 10 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
-        navigate('/pricing', { state: { from: '/writer/write' } });
-        return;
-      }
-      hasFetched.current = true;
-      generateAllChapters();
+  const generateSingleChapter = async (chapterObj, isBatch = false) => {
+    const chIndex = chapterObj.chapter;
+    
+    // Check credits before starting
+    if (!userData || ((userData.credits || 0) < 2 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
+      navigate('/pricing', { state: { from: '/writer/write' } });
+      return false; // Return false to indicate failure/interruption
     }
-  }, [chapter, isLoading, outline, userData, currentUser, navigate, genre]);
 
-  if (!genre) return null;
-
-  const generateAllChapters = async () => {
-    // Only set loading if we haven't started. If we are streaming, we want to hide the spinner and show the text immediately.
-    setIsLoading(true);
+    setActiveGeneratingChapter(chIndex);
     setError('');
     
-    let currentManuscript = '';
-    setChapter('');
-    
     try {
-      for (let i = 0; i < outline.length; i++) {
-        const ch = outline[i];
-        const opener = genre.openers[Math.floor(Math.random() * genre.openers.length)];
-        
-        const prompt = `Write Chapter ${ch.chapter} of this dark romance story.
+      const opener = genre.openers[Math.floor(Math.random() * genre.openers.length)];
+      
+      const prompt = `Write Chapter ${chIndex} of this dark romance story.
 
-Title: ${ch.title}
-Summary: ${ch.summary}
+Title: ${chapterObj.title}
+Summary: ${chapterObj.summary}
 Hero: ${characters.maleName}
 Heroine: ${characters.femaleName}
 Setting: ${plot.setting}
-${i === 0 ? `Suggested opener style: "${opener}"\n` : ''}
+${chIndex === 1 ? `Suggested opener style: "${opener}"\n` : ''}
 Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tell. Make it INTENSE.`;
 
-        const system = `You are a dark romance author specializing in ${genre.name} fiction. Your style: cinematic, emotionally raw, fast-paced with short punchy paragraphs. Heavy dialogue. Forbidden tension. Every scene pushes the story forward.`;
-        
-        const header = `Chapter ${ch.chapter}: ${ch.title}\n\n`;
-        const prefix = currentManuscript + (i > 0 ? '\n\n\n' : '') + header;
-        
-        setIsLoading(false); // Hide spinner, let user watch the text stream
-        
-        const result = await callClaudeStream(prompt, system, (chunk) => {
-          setChapter(prefix + chunk);
-        });
-        
-        currentManuscript = prefix + result;
-        setChapter(currentManuscript);
-      }
+      const system = `You are a dark romance author specializing in ${genre.name} fiction. Your style: cinematic, emotionally raw, fast-paced with short punchy paragraphs. Heavy dialogue. Forbidden tension. Every scene pushes the story forward.`;
+      
+      // We will build the chapter text in this temporary variable, and also stream it to state
+      let tempText = '';
+      
+      await callClaudeStream(prompt, system, (chunk) => {
+        tempText += chunk;
+        setChapters(prev => ({
+          ...prev,
+          [chIndex]: tempText
+        }));
+      }, 2); // 2 credits per generation
+
+      return true;
     } catch(e) {
-      setError('Could not generate all chapters. Please try again.');
+      console.error(e);
+      setError(`Failed to generate Chapter ${chIndex}. Please try again.`);
+      return false;
     } finally {
-      setIsLoading(false);
+      setActiveGeneratingChapter(null);
     }
   };
 
+  const handleGenerateChapter = async (chapterObj) => {
+    setIsBatchGenerating(false);
+    stopBatchRef.current = true;
+    await generateSingleChapter(chapterObj);
+  };
+
+  const generateRemainingChapters = async () => {
+    setIsBatchGenerating(true);
+    stopBatchRef.current = false;
+    
+    for (let i = 0; i < outline.length; i++) {
+      if (stopBatchRef.current) break;
+      
+      const ch = outline[i];
+      // Skip if already generated
+      if (chapters[ch.chapter] && chapters[ch.chapter].length > 100) continue;
+      
+      // Find the chapter element to scroll into view
+      setTimeout(() => {
+        const el = document.getElementById(`chapter-box-${ch.chapter}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      const success = await generateSingleChapter(ch, true);
+      if (!success) break; // Stop batch if a chapter failed or ran out of credits
+    }
+    
+    setIsBatchGenerating(false);
+  };
+
+  const handleStopBatch = () => {
+    stopBatchRef.current = true;
+    setIsBatchGenerating(false);
+  };
+
+  const getCombinedManuscriptText = () => {
+    let combined = '';
+    outline.forEach(ch => {
+      if (chapters[ch.chapter]) {
+        combined += `Chapter ${ch.chapter}: ${ch.title}\n\n${chapters[ch.chapter]}\n\n\n`;
+      }
+    });
+    return combined.trim();
+  };
+
   const downloadChapter = () => {
-    const blob = new Blob([chapter], { type: 'text/plain' });
+    const text = getCombinedManuscriptText();
+    if (!text) {
+      setError("No chapters generated yet.");
+      return;
+    }
+    const blob = new Blob([text], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${characters.maleName}-${characters.femaleName}-full-story.txt`;
+    a.download = `${characters.maleName}-${characters.femaleName}-story.txt`;
     a.click();
   };
 
@@ -95,20 +145,36 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const [isSuccess, setIsSuccess] = useState(false);
-
   const handleSaveToLibrary = async () => {
     if (!currentUser) {
       setError("You must be logged in to save to library.");
       return;
     }
+    
+    // Combine chapters into HTML for Quill
+    let htmlContent = '';
+    outline.forEach(ch => {
+      if (chapters[ch.chapter]) {
+        htmlContent += `<h2>Chapter ${ch.chapter}: ${ch.title}</h2>`;
+        // Split by newlines and wrap in <p> tags
+        const paragraphs = chapters[ch.chapter].split(/\n\n+/);
+        paragraphs.forEach(p => {
+          htmlContent += `<p>${p.replace(/\n/g, '<br/>')}</p>`;
+        });
+      }
+    });
+
+    if (!htmlContent) {
+      setError("Please generate at least one chapter before saving.");
+      return;
+    }
+
     setSavingToLib(true);
     try {
-      console.log("Saving book to library...", { title: outline[0]?.title, userId: currentUser.uid });
       const docRef = await addDoc(collection(db, "books"), {
         userId: currentUser.uid,
         title: outline[0]?.title || 'Untitled',
-        content: chapter,
+        content: htmlContent,
         coverUrl: coverUrl,
         genreName: genre.name,
         genreColor: genre.color,
@@ -118,15 +184,13 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
         createdAt: Date.now(),
         updatedAt: Date.now()
       });
-      console.log("Book saved successfully!", docRef.id);
       
       setIsSuccess(true);
-      // Fast transition
       setTimeout(() => {
         resetApp();
         navigate('/library');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 800); // Shorter duration for better UX
+      }, 800);
     } catch (err) {
       console.error("Firestore Save Error:", err);
       setError(`Failed to save: ${err.message || "Unknown error"}`);
@@ -145,57 +209,15 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
     }
   };
 
-  const renderChapterContent = (text) => {
-    if (!text) return null;
-    
-    // Split into segments by chapter headers
-    // Using a regex to split and keep the delimiter if it matches Chapter X: Title
-    const segments = text.split(/(?=Chapter \d+:)/g);
-    
-    return segments.map((segment, segIdx) => {
-      // Find the header (first line) and content (rest)
-      const lines = segment.trim().split('\n');
-      const header = lines[0];
-      const rest = lines.slice(1).join('\n').trim();
-      
-      const isHeader = header.startsWith('Chapter ');
-      
-      return (
-        <React.Fragment key={segIdx}>
-          {isHeader && (
-            <h3 className="chapter-header dk-title">
-              {header}
-            </h3>
-          )}
-          
-          {rest.split(/\n\n+/).map((para, paraIdx) => (
-            <p key={paraIdx} className="chapter-paragraph">
-              {para.split('\n').map((line, lineIdx) => (
-                <React.Fragment key={lineIdx}>
-                  {line}
-                  {lineIdx < para.split('\n').length - 1 && <br />}
-                </React.Fragment>
-              ))}
-            </p>
-          ))}
-        </React.Fragment>
-      );
-    });
-  };
+  // Check if all chapters are generated
+  const allGenerated = outline.every(ch => chapters[ch.chapter] && chapters[ch.chapter].length > 100);
 
   return (
-    <div id="step-6" className="animate-in">
+    <div id="step-6" className="animate-in" style={{ paddingBottom: '100px' }}>
       {isSuccess && (
         <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(5,0,5,0.9)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(10px)'
+          position: 'fixed', inset: 0, background: 'rgba(5,0,5,0.9)', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(10px)'
         }} className="animate-in">
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
           <h2 className="dk-title" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Masterpiece Saved!</h2>
@@ -206,55 +228,120 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
       <p className="step-eyebrow dk-body" style={{ color: 'var(--accent)' }}>STEP 06</p>
       <h2 className="step-title dk-title">Your Manuscript</h2>
       
-      {isLoading && (
-        <div id="loading-screen" className="animate-in">
-          <p className="loading-title dk-title" style={{ color: 'var(--accent)' }}>Writing your story...</p>
-          <div className="dots">
-            <div className="dot"></div>
-            <div className="dot"></div>
-            <div className="dot"></div>
-          </div>
-        </div>
-      )}
-      
       {error && <div className="error-msg animate-in">{error}</div>}
-      
-      {chapter && (
-        <div id="chapter-output" className={`animate-in ${isWide ? 'full-width' : ''}`}>
-          <div className="btn-row" style={{ marginBottom: '1rem', justifyContent: 'center', gap: '1rem' }}>
+
+      <div className={`animate-in ${isWide ? 'full-width' : ''}`} style={{ maxWidth: isWide ? '100%' : '1100px', margin: '0 auto' }}>
+        
+        <div className="btn-row" style={{ marginBottom: '2rem', justifyContent: 'space-between', alignItems: 'center' }}>
+           <div>
+             {!allGenerated && !isBatchGenerating && (
+               <button className="btn-accent dk-body" onClick={generateRemainingChapters}>
+                 ✦ Generate All Remaining Chapters
+               </button>
+             )}
+             {isBatchGenerating && (
+               <button className="btn-accent outline dk-body" onClick={handleStopBatch} style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                 ⏹ Stop Generating
+               </button>
+             )}
+           </div>
+           <div style={{ display: 'flex', gap: '1rem' }}>
              <button className="btn-ghost dk-body" onClick={() => setIsWide(!isWide)}>
                {isWide ? '⊙ Normal View' : '⊚ Wide View'}
              </button>
              <button className="btn-ghost dk-body" onClick={toggleFullScreen}>
                ⛶ Full Screen
              </button>
-          </div>
-          <div className="chapter-box" style={{ 
-            border: `1px solid ${genre.color}33`,
-            maxWidth: isWide ? '100%' : '1100px',
-            padding: isWide ? '5rem 10%' : '5rem 6rem'
-          }}>
-            {coverUrl && (
-              <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                <img src={coverUrl} alt="Cover" style={{ maxWidth: '300px', width: '100%', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
-              </div>
-            )}
-            <div className="manuscript-content">
-              {renderChapterContent(chapter)}
-            </div>
-          </div>
-          <div className="btn-row">
-            <button className="btn-ghost dk-body" onClick={handleBack} disabled={isLoading}>← Back to Cover</button>
-            <button className="btn-accent dk-body" onClick={downloadChapter} disabled={isLoading}>
-              {isLoading ? 'Writing...' : 'Download Full Story'}
-            </button>
-            <button className="btn-accent dk-body" onClick={handleSaveToLibrary} disabled={isLoading || savingToLib}>
-              {savingToLib ? 'Saving...' : 'Save to Library'}
-            </button>
-            <button className="btn-accent outline dk-body" onClick={() => { resetApp(); navigate('/'); }} disabled={isLoading}>Start New Story</button>
-          </div>
+           </div>
         </div>
-      )}
+
+        {coverUrl && (
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <img src={coverUrl} alt="Cover" style={{ maxWidth: '250px', width: '100%', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+          </div>
+        )}
+
+        <div className="manuscript-chapters" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {outline.map((ch) => {
+            const isGenerated = chapters[ch.chapter] && chapters[ch.chapter].length > 0;
+            const isGenerating = activeGeneratingChapter === ch.chapter;
+            
+            return (
+              <div 
+                id={`chapter-box-${ch.chapter}`}
+                key={ch.chapter} 
+                className="glass-card" 
+                style={{ 
+                  padding: '2.5rem', 
+                  border: isGenerating ? `1px solid ${genre.color}` : '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: isGenerating ? `0 0 20px ${genre.color}33` : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                  <div>
+                    <h3 className="dk-title" style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0' }}>Chapter {ch.chapter}: {ch.title}</h3>
+                    <p className="dk-body" style={{ color: '#a1a1aa', fontSize: '0.9rem', margin: 0, maxWidth: '600px' }}>{ch.summary}</p>
+                  </div>
+                  
+                  <div>
+                    {isGenerating ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: genre.color }} className="dk-body font-bold">
+                        <span className="dot" style={{ background: genre.color, width: '8px', height: '8px', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
+                        Writing...
+                      </div>
+                    ) : isGenerated ? (
+                      <div style={{ display: 'flex', gap: '1rem' }}>
+                        <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="dk-body font-bold">
+                          ✓ Complete
+                        </span>
+                        {!isBatchGenerating && (
+                           <button className="btn-ghost dk-body" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }} onClick={() => handleGenerateChapter(ch)}>
+                             Regenerate (2 Credits)
+                           </button>
+                        )}
+                      </div>
+                    ) : (
+                      <button 
+                        className="btn-accent outline dk-body" 
+                        onClick={() => handleGenerateChapter(ch)}
+                        disabled={isBatchGenerating || activeGeneratingChapter !== null}
+                      >
+                        Generate (2 Credits)
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {(isGenerated || isGenerating) && (
+                  <div className="chapter-content dk-body" style={{ 
+                    marginTop: '2rem', 
+                    paddingTop: '2rem', 
+                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    whiteSpace: 'pre-wrap',
+                    lineHeight: '1.8',
+                    fontSize: '1.1rem',
+                    color: '#e4e4e7'
+                  }}>
+                    {chapters[ch.chapter]}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="btn-row" style={{ marginTop: '4rem', padding: '2rem', background: 'rgba(0,0,0,0.5)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+          <button className="btn-ghost dk-body" onClick={handleBack} disabled={isBatchGenerating || activeGeneratingChapter !== null}>← Back</button>
+          <button className="btn-accent outline dk-body" onClick={downloadChapter} disabled={isBatchGenerating || activeGeneratingChapter !== null || Object.keys(chapters).length === 0}>
+            Download TXT
+          </button>
+          <button className="btn-accent dk-body" onClick={handleSaveToLibrary} disabled={isBatchGenerating || activeGeneratingChapter !== null || Object.keys(chapters).length === 0 || savingToLib}>
+            {savingToLib ? 'Saving...' : 'Save to Library'}
+          </button>
+          <button className="btn-ghost dk-body" onClick={() => { resetApp(); navigate('/'); }} disabled={isBatchGenerating || activeGeneratingChapter !== null} style={{ color: '#ef4444' }}>Discard Story</button>
+        </div>
+      </div>
     </div>
   );
 }

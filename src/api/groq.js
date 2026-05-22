@@ -23,7 +23,7 @@ export async function callClaude(prompt, system) {
   return data.content;
 }
 
-export async function callClaudeStream(prompt, system, onChunk) {
+export async function callClaudeStream(prompt, system, onChunk, cost = 10) {
   const token = await getToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -31,7 +31,7 @@ export async function callClaudeStream(prompt, system, onChunk) {
   const res = await fetch('/api/generate', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ prompt, system, stream: true, cost: 10 })
+    body: JSON.stringify({ prompt, system, stream: true, cost })
   });
 
   if (!res.ok) {

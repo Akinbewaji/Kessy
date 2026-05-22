@@ -25,9 +25,9 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem('kessy_coverUrl');
     return saved ? JSON.parse(saved) : null;
   });
-  const [chapter, setChapter] = useState(() => {
-    const saved = localStorage.getItem('kessy_chapter');
-    return saved ? JSON.parse(saved) : '';
+  const [chapters, setChapters] = useState(() => {
+    const saved = localStorage.getItem('kessy_chapters');
+    return saved ? JSON.parse(saved) : {};
   });
 
   // Sync to localStorage
@@ -37,8 +37,8 @@ export function AppProvider({ children }) {
     localStorage.setItem('kessy_plot', JSON.stringify(plot));
     localStorage.setItem('kessy_outline', JSON.stringify(outline));
     localStorage.setItem('kessy_coverUrl', JSON.stringify(coverUrl));
-    localStorage.setItem('kessy_chapter', JSON.stringify(chapter));
-  }, [genreId, characters, plot, outline, coverUrl, chapter]);
+    localStorage.setItem('kessy_chapters', JSON.stringify(chapters));
+  }, [genreId, characters, plot, outline, coverUrl, chapters]);
 
   // Derived state
   const genre = GENRES.find((g) => g.id === genreId);
@@ -59,8 +59,8 @@ export function AppProvider({ children }) {
     setPlot({ trope: '', conflict: '', setting: '' });
     setOutline(null);
     setCoverUrl(null);
-    setChapter('');
-    ['kessy_genreId', 'kessy_characters', 'kessy_plot', 'kessy_outline', 'kessy_coverUrl', 'kessy_chapter'].forEach(key => localStorage.removeItem(key));
+    setChapters({});
+    ['kessy_genreId', 'kessy_characters', 'kessy_plot', 'kessy_outline', 'kessy_coverUrl', 'kessy_chapters'].forEach(key => localStorage.removeItem(key));
     document.documentElement.style.setProperty('--accent', '#8B5CF6');
   };
 
@@ -78,8 +78,8 @@ export function AppProvider({ children }) {
     setOutline,
     coverUrl,
     setCoverUrl,
-    chapter,
-    setChapter,
+    chapters,
+    setChapters,
     resetApp
   };
 
