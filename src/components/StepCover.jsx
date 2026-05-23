@@ -51,9 +51,10 @@ Heroine: ${characters.femaleName} (${genre.leads.female})
 User's specific cover idea: ${userIdea || 'None provided, use best judgment based on genre'}
 
 The prompt should focus on the aesthetic, mood, lighting, and visual elements. Do not include any text, typography, or titles. Focus purely on the art.
+IMPORTANT: You MUST avoid any explicit, NSFW, overly violent, or gory words (e.g., blood, naked, torture, sex) as they will trigger safety filters and crash the image generator. Use safe, atmospheric metaphors instead (e.g., crimson mist, shadowed figures).
 Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTERS.`;
 
-      const system = `You are an expert AI art prompt engineer. You output only raw, concise prompt strings optimized for cinematic book covers. NEVER EXCEED 200 CHARACTERS.`;
+      const system = `You are an expert AI art prompt engineer. You output only raw, concise, strictly PG-13 prompt strings optimized for cinematic book covers. NEVER EXCEED 200 CHARACTERS.`;
 
       const result = await callClaude(prompt, system);
       
