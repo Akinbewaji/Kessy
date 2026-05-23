@@ -19,6 +19,11 @@ export default function BookEditor() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
+  
+  const [isEditingCover, setIsEditingCover] = useState(false);
+  const [newCoverIdea, setNewCoverIdea] = useState('');
+  const [generatingCover, setGeneratingCover] = useState(false);
+  const [coverError, setCoverError] = useState('');
 
   useEffect(() => {
     async function fetchBook() {
@@ -129,6 +134,56 @@ export default function BookEditor() {
     setExporting(false);
   };
 
+  const handleGenerateNewCover = async () => {
+    if (!userData || ((userData.credits || 0) < 1 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
+      navigate('/pricing', { state: { from: `/library/${id}` } });
+      return;
+    }
+
+    setGeneratingCover(true);
+    setCoverError('');
+
+    try {
+      const prompt = `Write a highly descriptive, comma-separated visual prompt for an AI image generator (like Midjourney or DALL-E) to create a book cover for this story.
+      
+Genre: ${book.genreName} Dark Romance
+Setting: ${book.setting}
+Hero: ${book.hero}
+Heroine: ${book.heroine}
+User's specific cover idea: ${newCoverIdea || 'None provided, use best judgment based on genre'}
+
+The prompt should focus on the aesthetic, mood, lighting, and visual elements. Do not include any text, typography, or titles. Focus purely on the art.
+IMPORTANT: You MUST avoid any explicit, NSFW, overly violent, or gory words (e.g., blood, naked, torture, sex) as they will trigger safety filters and crash the image generator. Use safe, atmospheric metaphors instead (e.g., crimson mist, shadowed figures).
+Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTERS.`;
+
+      const system = `You are an expert AI art prompt engineer. You output only raw, concise, strictly PG-13 prompt strings optimized for cinematic book covers. NEVER EXCEED 200 CHARACTERS.`;
+
+      // Automatically deducts 1 credit via groq.js (default cost: 1)
+      const result = await callClaude(prompt, system);
+      
+      const seed = Math.floor(Math.random() * 1000000);
+      const safePrompt = result.substring(0, 300);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=512&height=768&nologo=true&seed=${seed}`;
+      
+      // Update local state
+      setBook(prev => ({ ...prev, coverUrl: imageUrl }));
+      
+      // Save directly to Firestore
+      const docRef = doc(db, "books", id);
+      await updateDoc(docRef, {
+        coverUrl: imageUrl,
+        updatedAt: Date.now()
+      });
+      
+      setIsEditingCover(false);
+      setNewCoverIdea('');
+    } catch (e) {
+      setCoverError('Failed to generate cover art. Please try again.');
+    } finally {
+      setGeneratingCover(false);
+    }
+  };
+
   if (loading) return <div style={{ textAlign: 'center', padding: '10rem', color: '#666' }} className="dk-body">Loading manuscript...</div>;
   if (error) return <div className="error-msg animate-in" style={{ margin: '4rem auto', maxWidth: '600px' }}>{error}</div>;
   if (!book) return null;
@@ -143,9 +198,40 @@ export default function BookEditor() {
         </button>
         
         <div className="glass-card" style={{ padding: '2.5rem', position: 'sticky', top: '120px', border: `1px solid ${book.genreColor}33` }}>
-          {book.coverUrl && (
-            <img src={book.coverUrl} alt="Cover" style={{ width: '100%', borderRadius: '8px', marginBottom: '2rem', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
+          {book.coverUrl ? (
+            <img src={book.coverUrl} alt="Cover" style={{ width: '100%', borderRadius: '8px', marginBottom: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
+          ) : (
+            <div style={{ width: '100%', height: '250px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem', border: `1px dashed ${book.genreColor}55` }}>
+              <span className="dk-body" style={{ color: '#666' }}>No Cover</span>
+            </div>
           )}
+          
+          <div style={{ marginBottom: '2rem' }}>
+            {isEditingCover ? (
+              <div className="animate-in" style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px' }}>
+                <textarea
+                  className="dk-input"
+                  style={{ marginBottom: '0.5rem', padding: '0.75rem', fontSize: '0.85rem' }}
+                  rows={2}
+                  placeholder="Cover idea (optional)..."
+                  value={newCoverIdea}
+                  onChange={(e) => setNewCoverIdea(e.target.value)}
+                />
+                {coverError && <div style={{ color: '#ef4444', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{coverError}</div>}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={handleGenerateNewCover} disabled={generatingCover} className="btn-accent dk-body" style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}>
+                    {generatingCover ? 'Generating...' : 'Generate (1 Credit)'}
+                  </button>
+                  <button onClick={() => setIsEditingCover(false)} disabled={generatingCover} className="btn-ghost dk-body" style={{ padding: '0.5rem', fontSize: '0.8rem' }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setIsEditingCover(true)} className="btn-ghost dk-body" style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                {book.coverUrl ? '✎ Change Cover' : '✨ Generate Cover'}
+              </button>
+            )}
+          </div>
+
           <h2 className="dk-title" style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>{book.title || 'Untitled Story'}</h2>
           <p className="dk-body" style={{ color: book.genreColor, fontSize: '0.85rem', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>{book.genreName}</p>
           
