@@ -70,8 +70,8 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
       
       let tempText = '';
       
-      await callClaudeStream(prompt, system, (chunk) => {
-        tempText += chunk;
+      await callClaudeStream(prompt, system, (fullText) => {
+        tempText = fullText;
       }, 2); // 2 credits per generation
 
       // Final update to show the completely finished text
