@@ -68,23 +68,13 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
 
       const system = `You are a dark romance author specializing in ${genre.name} fiction. Your style: cinematic, emotionally raw, fast-paced with short punchy paragraphs. Heavy dialogue. Forbidden tension. Every scene pushes the story forward.`;
       
-      // We will build the chapter text in this temporary variable, and also stream it to state
       let tempText = '';
-      let lastUpdate = Date.now();
       
       await callClaudeStream(prompt, system, (chunk) => {
         tempText += chunk;
-        const now = Date.now();
-        if (now - lastUpdate > 100) {
-          setChapters(prev => ({
-            ...prev,
-            [chIndex]: tempText
-          }));
-          lastUpdate = now;
-        }
       }, 2); // 2 credits per generation
 
-      // Final update to catch any remaining text
+      // Final update to show the completely finished text
       setChapters(prev => ({
         ...prev,
         [chIndex]: tempText
@@ -333,7 +323,7 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
                   </div>
                 </div>
 
-                {(isGenerated || isGenerating) && (
+                {isGenerated && !isGenerating && (
                   <div className="chapter-content dk-body" style={{ 
                     marginTop: '2rem', 
                     paddingTop: '2rem', 
