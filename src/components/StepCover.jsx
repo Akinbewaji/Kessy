@@ -129,11 +129,9 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
         <button className="btn-accent outline dk-body" onClick={handleGenerate} disabled={isLoading || imageLoading}>
           {coverUrl ? 'Regenerate Cover' : 'Generate Cover'}
         </button>
-        {coverUrl && !imageLoading && (
-          <button className="btn-accent dk-body" onClick={handleNext} disabled={isLoading || imageLoading}>
-            Write Full Story →
-          </button>
-        )}
+        <button className="btn-accent dk-body" onClick={handleNext} disabled={isLoading || imageLoading}>
+          {coverUrl ? 'Write Full Story →' : 'Skip Cover & Write Story →'}
+        </button>
       </div>
     </div>
   );
