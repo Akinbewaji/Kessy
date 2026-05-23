@@ -25,10 +25,7 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem('kessy_coverUrl');
     return saved ? JSON.parse(saved) : null;
   });
-  const [chapters, setChapters] = useState(() => {
-    const saved = localStorage.getItem('kessy_chapters');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [chapters, setChapters] = useState({});
 
   // Sync to localStorage
   useEffect(() => {
@@ -37,8 +34,7 @@ export function AppProvider({ children }) {
     localStorage.setItem('kessy_plot', JSON.stringify(plot));
     localStorage.setItem('kessy_outline', JSON.stringify(outline));
     localStorage.setItem('kessy_coverUrl', JSON.stringify(coverUrl));
-    localStorage.setItem('kessy_chapters', JSON.stringify(chapters));
-  }, [genreId, characters, plot, outline, coverUrl, chapters]);
+  }, [genreId, characters, plot, outline, coverUrl]);
 
   // Derived state
   const genre = GENRES.find((g) => g.id === genreId);
