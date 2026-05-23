@@ -46,7 +46,15 @@ export default function StepWrite() {
     
     try {
       const opener = genre.openers[Math.floor(Math.random() * genre.openers.length)];
-      
+      let previousContext = '';
+      if (chIndex > 1) {
+        const prevText = chapters[chIndex - 1];
+        if (prevText && prevText.length > 50) {
+          const tail = prevText.slice(-1500);
+          previousContext = `\n---\nPREVIOUS CHAPTER ENDING:\n"...${tail}"\n---\nCRITICAL INSTRUCTION: DO NOT re-introduce the characters or repeat the setting. DO NOT repeat the events from the previous chapter. Pick up the story seamlessly exactly where the previous chapter ended and immediately advance the plot.`;
+        }
+      }
+
       const prompt = `Write Chapter ${chIndex} of this dark romance story.
 
 Title: ${chapterObj.title}
@@ -54,21 +62,33 @@ Summary: ${chapterObj.summary}
 Hero: ${characters.maleName}
 Heroine: ${characters.femaleName}
 Setting: ${plot.setting}
-${chIndex === 1 ? `Suggested opener style: "${opener}"\n` : ''}
+${chIndex === 1 ? `Suggested opener style: "${opener}"\n` : ''}${previousContext}
+
 Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tell. Make it INTENSE.`;
 
       const system = `You are a dark romance author specializing in ${genre.name} fiction. Your style: cinematic, emotionally raw, fast-paced with short punchy paragraphs. Heavy dialogue. Forbidden tension. Every scene pushes the story forward.`;
       
       // We will build the chapter text in this temporary variable, and also stream it to state
       let tempText = '';
+      let lastUpdate = Date.now();
       
       await callClaudeStream(prompt, system, (chunk) => {
         tempText += chunk;
-        setChapters(prev => ({
-          ...prev,
-          [chIndex]: tempText
-        }));
+        const now = Date.now();
+        if (now - lastUpdate > 100) {
+          setChapters(prev => ({
+            ...prev,
+            [chIndex]: tempText
+          }));
+          lastUpdate = now;
+        }
       }, 2); // 2 credits per generation
+
+      // Final update to catch any remaining text
+      setChapters(prev => ({
+        ...prev,
+        [chIndex]: tempText
+      }));
 
       return true;
     } catch(e) {
