@@ -157,6 +157,101 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
+app.post('/api/generate-image', async (req, res) => {
+  try {
+    const { prompt, cost = 1 } = req.body;
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    }
+    
+    const idToken = authHeader.split('Bearer ')[1];
+    
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(idToken);
+    } catch (e) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+
+    const uid = decodedToken.uid;
+    const projectId = process.env.VITE_FIREBASE_PROJECT_ID;
+
+    // Check credits
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}`;
+    const fsRes = await fetch(firestoreUrl, {
+      headers: { 'Authorization': `Bearer ${idToken}` }
+    });
+    
+    if (!fsRes.ok) return res.status(403).json({ error: 'Forbidden' });
+    
+    const fsData = await fsRes.json();
+    const credits = parseInt(fsData.fields?.credits?.integerValue || 0, 10);
+    const role = fsData.fields?.role?.stringValue || 'user';
+    
+    let canBypass = false;
+    if (role === 'admin') canBypass = true;
+    else if (role !== 'user') {
+      const roleUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/roles/${role}`;
+      const roleRes = await fetch(roleUrl, { headers: { 'Authorization': `Bearer ${idToken}` } });
+      if (roleRes.ok) {
+        const roleData = await roleRes.json();
+        if (roleData.fields?.canBypassCredits?.booleanValue === true) canBypass = true;
+      }
+    }
+    
+    if (!canBypass && credits < cost) {
+      return res.status(403).json({ error: 'Forbidden: Insufficient credits for image.' });
+    }
+
+    if (!canBypass) {
+      const commitRes = await fetch(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:commit`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          writes: [{ transform: { document: `projects/${projectId}/databases/(default)/documents/users/${uid}`, fieldTransforms: [{ fieldPath: 'credits', increment: { integerValue: -cost } }] } }]
+        })
+      });
+      if (!commitRes.ok) return res.status(500).json({ error: 'Failed to deduct credits' });
+    }
+
+    const apiKey = process.env.STABILITY_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'Missing Stability API Key' });
+
+    const engineId = 'stable-diffusion-v1-6';
+    const response = await fetch(`https://api.stability.ai/v1/generation/${engineId}/text-to-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        text_prompts: [{ text: prompt }],
+        cfg_scale: 7,
+        height: 768,
+        width: 512,
+        samples: 1,
+        steps: 30,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Stability API error');
+    }
+
+    const responseJSON = await response.json();
+    const base64Image = responseJSON.artifacts[0].base64;
+    res.json({ base64: base64Image });
+
+  } catch (error) {
+    console.error('Error generating image:', error);
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+});
+
 app.post('/api/export-docx', async (req, res) => {
   try {
     const { html, title } = req.body;

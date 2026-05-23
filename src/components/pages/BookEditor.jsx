@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { callClaude } from '../../api/groq';
+import { callClaude, callStabilityImage } from '../../api/groq';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -158,12 +158,12 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
 
       const system = `You are an expert AI art prompt engineer. You output only raw, concise, strictly PG-13 prompt strings optimized for cinematic book covers. NEVER EXCEED 200 CHARACTERS.`;
 
-      // Automatically deducts 1 credit via groq.js (default cost: 1)
+      // Generate the prompt via Groq
       const result = await callClaude(prompt, system);
       
-      const seed = Math.floor(Math.random() * 1000000);
-      const safePrompt = result.substring(0, 300);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=512&height=768&nologo=true&seed=${seed}`;
+      // Pass prompt to Stability AI
+      const base64Str = await callStabilityImage(result, 1);
+      const imageUrl = `data:image/png;base64,${base64Str}`;
       
       // Update local state
       setBook(prev => ({ ...prev, coverUrl: imageUrl }));

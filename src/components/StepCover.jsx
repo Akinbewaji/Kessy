@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { callClaude } from '../api/groq';
+import { callClaude, callStabilityImage } from '../api/groq';
 import { useAuth } from '../context/AuthContext';
 
 export default function StepCover() {
@@ -58,10 +58,9 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
 
       const result = await callClaude(prompt, system);
       
-      const seed = Math.floor(Math.random() * 1000000);
-      // Safe guard the length of the string to avoid URL length limits
-      const safePrompt = result.substring(0, 300);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=512&height=768&nologo=true&seed=${seed}`;
+      // Call our secure Stability API endpoint
+      const base64Str = await callStabilityImage(result, 1);
+      const imageUrl = `data:image/png;base64,${base64Str}`;
       
       setImageLoading(true); // Start image loading spinner
       setCoverUrl(imageUrl);
