@@ -65,7 +65,8 @@ Return ONLY the prompt string, nothing else. KEEP IT CONCISE, UNDER 200 CHARACTE
       setImageLoading(true); // Start image loading spinner
       setCoverUrl(imageUrl);
     } catch (e) {
-      setError('Could not generate cover art. Please try again.');
+      console.error(e);
+      setError(`Error: ${e.message}`);
     } finally {
       setIsLoading(false); // Hide the prompt-generation spinner
     }
