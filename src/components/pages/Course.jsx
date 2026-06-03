@@ -36,7 +36,7 @@ export default function Course() {
 
       <div style={{ padding: '4rem 2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
         <h3 className="dk-title" style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Ready to start your journey?</h3>
-        <a href="https://selar.co/placeholder" target="_blank" rel="noreferrer" className="btn-accent btn-large dk-body" style={{ textDecoration: 'none', display: 'inline-block' }}>
+        <a href="https://selar.com/1191v51k99" target="_blank" rel="noreferrer" className="btn-accent btn-large dk-body" style={{ textDecoration: 'none', display: 'inline-block' }}>
           ENROLL ON SELAR NOW
         </a>
         <p className="dk-body" style={{ color: '#666', marginTop: '1.5rem', fontSize: '0.85rem' }}>Limited slots available for personalized mentorship.</p>
