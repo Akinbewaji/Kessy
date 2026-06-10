@@ -27,6 +27,31 @@ export function AppProvider({ children }) {
   });
   const [chapters, setChapters] = useState({});
 
+  // New Dark Romance Settings
+  const [darknessLevel, setDarknessLevel] = useState(() => {
+    const saved = localStorage.getItem('kessy_darknessLevel');
+    return saved ? JSON.parse(saved) : 3;
+  });
+  const [heatLevel, setHeatLevel] = useState(() => {
+    const saved = localStorage.getItem('kessy_heatLevel');
+    return saved ? JSON.parse(saved) : 3;
+  });
+  const [possessivenessLevel, setPossessivenessLevel] = useState(() => {
+    const saved = localStorage.getItem('kessy_possessivenessLevel');
+    return saved ? JSON.parse(saved) : 3;
+  });
+  const [heaGuarantee, setHeaGuarantee] = useState(() => {
+    const saved = localStorage.getItem('kessy_heaGuarantee');
+    return saved ? JSON.parse(saved) : 'HEA'; // HEA, HFN, or Tragic
+  });
+  const [dualPov, setDualPov] = useState(() => {
+    const saved = localStorage.getItem('kessy_dualPov');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [chapterCount, setChapterCount] = useState(() => {
+    const saved = localStorage.getItem('kessy_chapterCount');
+    return saved ? JSON.parse(saved) : 10;
+  });
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('kessy_genreId', JSON.stringify(genreId));
@@ -34,7 +59,13 @@ export function AppProvider({ children }) {
     localStorage.setItem('kessy_plot', JSON.stringify(plot));
     localStorage.setItem('kessy_outline', JSON.stringify(outline));
     localStorage.setItem('kessy_coverUrl', JSON.stringify(coverUrl));
-  }, [genreId, characters, plot, outline, coverUrl]);
+    localStorage.setItem('kessy_darknessLevel', JSON.stringify(darknessLevel));
+    localStorage.setItem('kessy_heatLevel', JSON.stringify(heatLevel));
+    localStorage.setItem('kessy_possessivenessLevel', JSON.stringify(possessivenessLevel));
+    localStorage.setItem('kessy_heaGuarantee', JSON.stringify(heaGuarantee));
+    localStorage.setItem('kessy_dualPov', JSON.stringify(dualPov));
+    localStorage.setItem('kessy_chapterCount', JSON.stringify(chapterCount));
+  }, [genreId, characters, plot, outline, coverUrl, darknessLevel, heatLevel, possessivenessLevel, heaGuarantee, dualPov, chapterCount]);
 
   // Derived state
   const genre = GENRES.find((g) => g.id === genreId);
@@ -56,7 +87,13 @@ export function AppProvider({ children }) {
     setOutline(null);
     setCoverUrl(null);
     setChapters({});
-    ['kessy_genreId', 'kessy_characters', 'kessy_plot', 'kessy_outline', 'kessy_coverUrl', 'kessy_chapters'].forEach(key => localStorage.removeItem(key));
+    setDarknessLevel(3);
+    setHeatLevel(3);
+    setPossessivenessLevel(3);
+    setHeaGuarantee('HEA');
+    setDualPov(false);
+    setChapterCount(10);
+    ['kessy_genreId', 'kessy_characters', 'kessy_plot', 'kessy_outline', 'kessy_coverUrl', 'kessy_chapters', 'kessy_darknessLevel', 'kessy_heatLevel', 'kessy_possessivenessLevel', 'kessy_heaGuarantee', 'kessy_dualPov', 'kessy_chapterCount'].forEach(key => localStorage.removeItem(key));
     document.documentElement.style.setProperty('--accent', '#8B5CF6');
   };
 
@@ -76,6 +113,18 @@ export function AppProvider({ children }) {
     setCoverUrl,
     chapters,
     setChapters,
+    darknessLevel,
+    setDarknessLevel,
+    heatLevel,
+    setHeatLevel,
+    possessivenessLevel,
+    setPossessivenessLevel,
+    heaGuarantee,
+    setHeaGuarantee,
+    dualPov,
+    setDualPov,
+    chapterCount,
+    setChapterCount,
     resetApp
   };
 

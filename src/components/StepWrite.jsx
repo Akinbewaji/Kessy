@@ -7,7 +7,12 @@ import { collection, addDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 
 export default function StepWrite() {
-  const { genre, characters, plot, outline, coverUrl, chapters, setChapters, resetApp } = useContext(AppContext);
+  const { 
+    genre, characters, plot, outline, coverUrl, 
+    chapters, setChapters, resetApp,
+    darknessLevel, heatLevel, possessivenessLevel, dualPov 
+  } = useContext(AppContext);
+  
   const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
   
@@ -20,6 +25,11 @@ export default function StepWrite() {
   const [isWide, setIsWide] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
+  // Trigger Warning states
+  const [triggerWarnings, setTriggerWarnings] = useState('');
+  const [isGeneratingTW, setIsGeneratingTW] = useState(false);
+  const [showTWModal, setShowTWModal] = useState(false);
+
   // Track if we should stop batch generation
   const stopBatchRef = useRef(false);
 
@@ -62,9 +72,15 @@ Summary: ${chapterObj.summary}
 Hero: ${characters.maleName}
 Heroine: ${characters.femaleName}
 Setting: ${plot.setting}
+${dualPov && chapterObj.pov ? `Point of View (POV): Write this entire chapter strictly from the perspective and inner voice of ${chapterObj.pov}.\n` : ''}
 ${chIndex === 1 ? `Suggested opener style: "${opener}"\n` : ''}${previousContext}
 
-Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tell. Make it INTENSE.`;
+Intensity & Themes:
+- Darkness Level: ${darknessLevel}/5
+- Heat Level: ${heatLevel}/5
+- Possessiveness/Jealousy: ${possessivenessLevel}/5
+
+Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tell. Make it INTENSE and ensure the prose matches the requested intensity levels.`;
 
       const system = `You are a dark romance author specializing in ${genre.name} fiction. Your style: cinematic, emotionally raw, fast-paced with short punchy paragraphs. Heavy dialogue. Forbidden tension. Every scene pushes the story forward.`;
       
@@ -137,6 +153,41 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
     return combined.trim();
   };
 
+  const handleGenerateTriggerWarnings = async () => {
+    const text = getCombinedManuscriptText();
+    if (!text || text.length < 500) {
+      setError("Please generate at least one full chapter before extracting trigger warnings.");
+      return;
+    }
+    
+    if (!userData || ((userData.credits || 0) < 1 && userData.role !== 'admin' && !userData.permissions?.canBypassCredits)) {
+      navigate('/pricing', { state: { from: '/writer/write' } });
+      return;
+    }
+
+    setShowTWModal(true);
+    setIsGeneratingTW(true);
+    setTriggerWarnings('');
+
+    try {
+      const prompt = `Read the following dark romance manuscript and generate a comprehensive Trigger Warning / Content Warning page for the author to use. Focus on identifying common dark themes like violence, dubious consent, psychological manipulation, etc. Format it clearly as a bulleted list. Keep it concise but thorough.
+      
+      Manuscript:
+      ${text}
+      `;
+      
+      const system = "You are an expert editor who accurately identifies trigger warnings and content warnings for dark romance novels.";
+      
+      await callClaudeStream(prompt, system, (fullText) => {
+        setTriggerWarnings(fullText);
+      }, 1); // 1 credit for trigger warnings
+    } catch(e) {
+      setTriggerWarnings("Failed to generate trigger warnings. Please try again.");
+    } finally {
+      setIsGeneratingTW(false);
+    }
+  };
+
   const downloadChapter = () => {
     const text = getCombinedManuscriptText();
     if (!text) {
@@ -151,7 +202,7 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
   };
 
   const handleBack = () => {
-    navigate('/cover');
+    navigate('/writer/cover');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -163,6 +214,17 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
     
     // Combine chapters into HTML for Quill
     let htmlContent = '';
+    
+    // Insert Trigger Warnings if they exist
+    if (triggerWarnings) {
+      htmlContent += `<h2>Trigger Warnings</h2>`;
+      const twParagraphs = triggerWarnings.split(/\n\n+/);
+      twParagraphs.forEach(p => {
+        htmlContent += `<p>${p.replace(/\n/g, '<br/>')}</p>`;
+      });
+      htmlContent += `<hr/>`;
+    }
+
     outline.forEach(ch => {
       if (chapters[ch.chapter]) {
         htmlContent += `<h2>Chapter ${ch.chapter}: ${ch.title}</h2>`;
@@ -234,13 +296,58 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
           <p className="dk-body" style={{ color: '#a1a1aa' }}>Opening your editor...</p>
         </div>
       )}
+
+      {showTWModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(5,0,5,0.8)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)'
+        }} className="animate-in">
+          <div className="glass-card" style={{ width: '90%', maxWidth: '600px', padding: '2rem', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+            <button 
+              onClick={() => setShowTWModal(false)}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#a1a1aa', cursor: 'pointer', fontSize: '1.2rem' }}
+            >
+              ✕
+            </button>
+            <h3 className="dk-title" style={{ marginBottom: '1rem', color: '#ef4444' }}>⚠️ Trigger Warnings</h3>
+            
+            {isGeneratingTW && !triggerWarnings ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: genre.color }} className="dk-body">
+                <span className="dot" style={{ background: genre.color, width: '8px', height: '8px', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
+                Analyzing manuscript for dark themes...
+              </div>
+            ) : (
+              <div className="dk-body" style={{ whiteSpace: 'pre-wrap', color: '#e4e4e7', lineHeight: '1.6' }}>
+                {triggerWarnings}
+              </div>
+            )}
+            
+            {!isGeneratingTW && (
+              <button className="btn-accent dk-body" style={{ marginTop: '2rem', width: '100%' }} onClick={() => setShowTWModal(false)}>
+                Done
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       
       <p className="step-eyebrow dk-body" style={{ color: 'var(--accent)' }}>STEP 06</p>
-      <h2 className="step-title dk-title">Your Manuscript</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <h2 className="step-title dk-title">Your Manuscript</h2>
+        {Object.keys(chapters).length > 0 && (
+          <button 
+            className="btn-accent outline dk-body" 
+            style={{ borderColor: '#ef4444', color: '#ef4444' }}
+            onClick={handleGenerateTriggerWarnings}
+          >
+            ⚠️ Auto-Generate Trigger Warnings
+          </button>
+        )}
+      </div>
       
       {error && <div className="error-msg animate-in">{error}</div>}
 
-      <div className={`animate-in ${isWide ? 'full-width' : ''}`} style={{ maxWidth: isWide ? '100%' : '1100px', margin: '0 auto' }}>
+      <div className={`animate-in ${isWide ? 'full-width' : ''}`} style={{ maxWidth: isWide ? '100%' : '1100px', margin: '0 auto', marginTop: '1rem' }}>
         
         <div className="btn-row" style={{ marginBottom: '2rem', justifyContent: 'space-between', alignItems: 'center' }}>
            <div>
@@ -291,7 +398,10 @@ Write 800-1000 words. Fast-paced, short paragraphs, 70% dialogue. Show don't tel
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                   <div>
                     <h3 className="dk-title" style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0' }}>Chapter {ch.chapter}: {ch.title}</h3>
-                    <p className="dk-body" style={{ color: '#a1a1aa', fontSize: '0.9rem', margin: 0, maxWidth: '600px' }}>{ch.summary}</p>
+                    <p className="dk-body" style={{ color: '#a1a1aa', fontSize: '0.9rem', margin: 0, maxWidth: '600px' }}>
+                      {dualPov && ch.pov && <span style={{ color: genre.color, marginRight: '0.5rem', fontWeight: 'bold' }}>[{ch.pov}'s POV]</span>}
+                      {ch.summary}
+                    </p>
                   </div>
                   
                   <div>

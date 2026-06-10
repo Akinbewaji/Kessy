@@ -73,7 +73,7 @@ export async function callClaudeStream(prompt, system, onChunk, cost = 10) {
   return result;
 }
 
-export async function callStabilityImage(prompt, cost = 1) {
+export async function callStabilityImage(prompt, cost = 1, seed = null) {
   const token = await getToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -81,7 +81,7 @@ export async function callStabilityImage(prompt, cost = 1) {
   const res = await fetch('/api/generate-image', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ prompt, cost })
+    body: JSON.stringify({ prompt, cost, seed })
   });
   
   const data = await res.json();

@@ -16,7 +16,7 @@ DigitalKessy is a premium, AI-powered dark romance ghostwriting platform. It ena
 * **Backend (Serverless)**: Node.js / Express (for secure Groq API and DOCX generation calls)
 * **Database & Auth**: Firebase Authentication & Cloud Firestore
 * **Payment Gateway**: Paystack integration for seamless Naira (NGN) credit top-ups
-* **AI Providers**: Groq (LLM Text Generation), Pollinations.ai (Image Generation)
+* **AI Providers**: Groq (LLM Text Generation), Stability AI (Image Generation)
 
 ## 🚀 Getting Started
 
@@ -25,6 +25,8 @@ DigitalKessy is a premium, AI-powered dark romance ghostwriting platform. It ena
 * A Firebase Project (with Firestore and Authentication enabled)
 * A Groq API Key
 * A Paystack Public Key
+* A Stability AI API Key
+* SMTP credentials (for the contact form)
 
 ### Installation
 
@@ -49,6 +51,10 @@ DigitalKessy is a premium, AI-powered dark romance ghostwriting platform. It ena
    VITE_FIREBASE_APP_ID="your_firebase_app_id"
    VITE_PAYSTACK_PUBLIC_KEY="your_paystack_public_key"
    GROQ_API_KEY="your_groq_api_key"
+   STABILITY_API_KEY="your_stability_api_key"
+   SMTP_USER="your_smtp_email_address"
+   SMTP_PASS="your_smtp_app_password"
+   ADMIN_EMAIL="optional_comma_separated_admin_emails"
    ```
 
 4. Start the development server (runs both Vite frontend and Express backend concurrently):

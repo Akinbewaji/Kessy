@@ -4,14 +4,42 @@ import { Helmet } from 'react-helmet';
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('');
+  const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder for actual form submission
-    setStatus('Thanks for reaching out! I will get back to you soon.');
-    setFormData({ name: '', email: '', message: '' });
+    setLoading(true);
+    setStatus('');
+    setIsError(false);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus(data.message || 'Thanks for reaching out! Your message has been sent.');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setIsError(true);
+        setStatus(data.error || 'Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      setIsError(true);
+      setStatus('A network error occurred. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  
   return (
     <div className="animate-in standard-section" style={{ maxWidth: '700px', margin: '0 auto' }}>
       <Helmet>
@@ -63,12 +91,28 @@ export default function Contact() {
         </div>
 
         {status && (
-          <div className="animate-in" style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '1rem', borderRadius: '6px', color: 'var(--accent-light)', marginBottom: '2rem', textAlign: 'center', fontSize: '0.9rem', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+          <div className="animate-in" style={{ 
+            background: isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(139, 92, 246, 0.1)', 
+            padding: '1rem', 
+            borderRadius: '6px', 
+            color: isError ? '#f87171' : 'var(--accent-light)', 
+            marginBottom: '2rem', 
+            textAlign: 'center', 
+            fontSize: '0.9rem', 
+            border: isError ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(139, 92, 246, 0.2)' 
+          }}>
             {status}
           </div>
         )}
 
-        <button type="submit" className="btn-accent btn-large btn-full dk-body">SEND MESSAGE</button>
+        <button 
+          type="submit" 
+          className="btn-accent btn-large btn-full dk-body" 
+          disabled={loading}
+          style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+        >
+          {loading ? 'SENDING...' : 'SEND MESSAGE'}
+        </button>
       </form>
 
       <div style={{ marginTop: '4rem', textAlign: 'center' }}>
