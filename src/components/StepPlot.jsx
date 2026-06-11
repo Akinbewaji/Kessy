@@ -4,6 +4,42 @@ import { AppContext } from '../context/AppContext';
 import { callClaude } from '../api/groq';
 import { useAuth } from '../context/AuthContext';
 
+function sanitizeJsonString(str) {
+  let result = '';
+  let inString = false;
+  let escape = false;
+  
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    
+    if (escape) {
+      result += char;
+      escape = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      result += char;
+      escape = true;
+      continue;
+    }
+    
+    if (char === '"') {
+      inString = !inString;
+      result += char;
+      continue;
+    }
+    
+    if (inString && (char === '\n' || char === '\r')) {
+      result += '\\n';
+      continue;
+    }
+    
+    result += char;
+  }
+  return result;
+}
+
 export default function StepPlot() {
   const { 
     genre, characters, plot, setPlot, setOutline, 
@@ -82,6 +118,12 @@ IMPORTANT: Ensure the response is valid, parsable JSON. If you include any quote
       } else {
         clean = result.replace(/```json|```/g, '').trim();
       }
+
+      // Sanitize raw literal newlines in string fields
+      clean = sanitizeJsonString(clean);
+
+      // Clean up trailing commas
+      clean = clean.replace(/,\s*([\]}])/g, '$1');
 
       setOutline(JSON.parse(clean));
       navigate('/writer/outline');
